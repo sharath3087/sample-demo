@@ -1,0 +1,10 @@
+name: DemoWorkflow2
+on: push
+jobs:
+  Demojob:
+    runs-on: ubuntu-latest
+    steps:
+      - name: First Step 1
+        run: echo "Hi there..."
+      - name: Second Step 2
+        run: echo "Testing second step only...."
