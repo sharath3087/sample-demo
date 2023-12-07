@@ -11,3 +11,6 @@ jobs:
         run: echo "Hi there..."
       - name: Second Step 2
         run: echo "Testing second step only...."
+      - name: Update Ubuntu
+        run: apt get update -y
+         
