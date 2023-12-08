@@ -11,6 +11,18 @@ jobs:
         run: echo "Hi there..."
       - name: Second Step 2
         run: echo "Testing second step only...."
-      - name: Update Ubuntu
-        run: apt get update -y
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Changes in this Release
+            - First Change
+            - Second Change
+          draft: false
+          prerelease: false
          
