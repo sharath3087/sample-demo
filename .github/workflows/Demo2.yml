@@ -5,6 +5,7 @@ on:
   workflow_dispatch:  
 jobs:
   Demojob:
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
       - name: First Step 1
