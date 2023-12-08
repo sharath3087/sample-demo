@@ -11,12 +11,13 @@ jobs:
         run: echo "Hi there..."
       - name: Second Step 2
         run: echo "Testing second step only...."
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      - name: Create tag and release
+        id: release
+        uses: rymndhng/release-on-push-action@master
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}    
+          bump_version_scheme: patch
+          tag_prefix: v
+          use_github_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  
          
