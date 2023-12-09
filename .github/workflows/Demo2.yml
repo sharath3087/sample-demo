@@ -18,12 +18,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: v${{ github.number }}
-          release_name: v${{ github.number }}
+          tag_name: v${{ github.run_number }}
+          release_name: v${{ github.run_number }}
           body: |
             Changes in this Release
             - First Change
-            - Second Change
+            v${{ github.run_number }}
           draft: false
           prerelease: true
          
