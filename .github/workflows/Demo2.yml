@@ -21,9 +21,11 @@ jobs:
           tag_name: v${{ github.run_number }}
           release_name: v${{ github.run_number }}
           body: |
-            Changes in this Release
-            - First Change
+            Version 10.3.104
+            What's Changed
             v${{ github.run_number }}
+            https://tekvizion.atlassian.net/browse/TV360-4968 by @naresaichaitanya in #2713
+            Full Changelog: v10.3.103...v10.3.104
           draft: false
-          prerelease: true
+          prerelease: false
          
