@@ -14,18 +14,7 @@ jobs:
         run: echo "${{ github.ref }}"
       - name: Create Release
         id: create_release
-        uses: actions/create-release@latest
+        uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: v${{ github.event.release.tag_name }}
-          body: |
-            Version 10.3.104
-            What's Changed
-            v${{ github.run_number }}
-            https://tekvizion.atlassian.net/browse/TV360-4968 by @naresaichaitanya in #2713
-            Full Changelog: v10.3.103...v10.3.104
-          draft: false
-          prerelease: false
          
