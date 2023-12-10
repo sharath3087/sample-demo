@@ -14,7 +14,14 @@ jobs:
         run: echo "${{ github.ref }}"
       - name: Create Release
         id: create_release
-        uses: release-drafter/release-drafter@v5
+        uses: actions/create-release@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: v${{ github.event.release.tag_name }}
+          body: |
+            gh release create ${{ github.ref }} --generate-notes
+          draft: false
+          prerelease: false
          
