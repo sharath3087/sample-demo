@@ -18,11 +18,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: v10.1.104
-          release_name: v10.1.104
+          tag_name: v10.1.105
+          release_name: v10.1.105
           body: |
             Changes in this Release
             - First Change
             - Second Change
           draft: false
           prerelease: true
+          generate_release_notes: true
