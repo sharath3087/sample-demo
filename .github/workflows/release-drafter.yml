@@ -34,7 +34,11 @@ jobs:
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAJOR: ${{ steps.version.outputs.major }}
+          TAG: ${{ steps.version.outputs.tag }}
       - name: force update major tag
         run: |
-         git tag v${{ steps.version.outputs.major }} ${{ steps.version.outputs.tag }} -f
-         git push origin refs/tags/v${{ steps.version.outputs.major }} -f  
+         echo "Major: ${{ env.MAJOR }}"
+         echo "Tag: ${{ env.TAG }}"
+         # git tag v${{ steps.version.outputs.major }} ${{ steps.version.outputs.tag }} -f
+         # git push origin refs/tags/v${{ steps.version.outputs.major }} -f  
