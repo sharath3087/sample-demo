@@ -12,12 +12,3 @@ jobs:
         run: echo "Hi there..."
       - name: Second Step 2
         run: echo "${{ github.ref }}"
-      - name: Create tag and release
-        id: release
-        uses: rymndhng/release-on-push-action@master
-        with:
-          bump_version_scheme: patch
-          tag_prefix: v
-          use_github_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
