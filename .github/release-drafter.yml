@@ -11,4 +11,3 @@ prerelease: false
 template: |
   $CHANGES
   $CONTRIBUTORS
-  $REPOSITORY
