@@ -1,3 +1,5 @@
+category-template: $TITLE
+
 template: |
   $CHANGES
   $CONTRIBUTORS
