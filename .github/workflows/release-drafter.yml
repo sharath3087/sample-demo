@@ -15,6 +15,10 @@ jobs:
         run: echo "Test Test...."
       - name: Second Step 2
         run: echo "${{ github.ref }}"
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  
       - name: version
         id: version
         run: |
@@ -30,7 +34,7 @@ jobs:
           publish: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # - name: force update major tag
-      #   run: |
-      #     git tag v${{ steps.version.outputs.major }} ${{ steps.version.outputs.tag }} -f
-      #     git push origin refs/tags/v${{ steps.version.outputs.major }} -f  
+      - name: force update major tag
+        run: |
+         git tag v${{ steps.version.outputs.major }} ${{ steps.version.outputs.tag }} -f
+         git push origin refs/tags/v${{ steps.version.outputs.major }} -f  
