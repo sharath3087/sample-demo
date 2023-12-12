@@ -1,5 +1,4 @@
-category-template: $TITLE
-
+name-template: "v$NEXT_PATCH_VERSION"
 template: |
   $CHANGES
   $CONTRIBUTORS
