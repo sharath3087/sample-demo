@@ -9,4 +9,4 @@ version-resolver:
   default: patch
 prerelease: false  
 template: |
-  $PREVIOUS_TAG
+  $CHANGES
