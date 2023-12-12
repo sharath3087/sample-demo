@@ -10,3 +10,5 @@ version-resolver:
 prerelease: false  
 template: |
   $CHANGES
+  $CONTRIBUTORS
+  $REPOSITORY
