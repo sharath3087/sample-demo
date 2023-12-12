@@ -9,4 +9,4 @@ version-resolver:
   default: patch
 prerelease: false  
 template: |
-  $REPOSITORY
+  $CONTRIBUTORS
