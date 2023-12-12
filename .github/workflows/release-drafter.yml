@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: First Step 1
-        run: echo "Hi there....."
+        run: echo "Test Test...."
       - name: Second Step 2
         run: echo "${{ github.ref }}"
       - uses: release-drafter/release-drafter@v5
