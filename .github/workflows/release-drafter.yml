@@ -18,11 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  
+          fetch-depth: 0
       - name: Release Drafter
-        uses: release-drafter/release-drafter@v5.25.0
-         with:
-            publish: true            
+        uses: release-drafter/release-drafter@v5.25.0          
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
