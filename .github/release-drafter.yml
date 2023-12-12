@@ -3,3 +3,4 @@ tag-template: "v$NEXT_PATCH_VERSION"
 template: |
   $CHANGES
   $CONTRIBUTORS
+ latest: true
