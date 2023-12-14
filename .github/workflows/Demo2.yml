@@ -9,10 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: First Step 1
-        run: echo "Hi there..."
+        uses: actions/checkout@v2
       - name: Second Step 2
-        run: echo "${{ github.ref }}"
-      - run: 'echo "$AZURE_UCAASACS_CONNECTION_STRING" > key'
-        shell: bash
         env:
-          AZURE_UCAASACS_CONNECTION_STRING: ${{secrets.AZURE_UCAASACS_CONNECTION_STRING}}
+          AZURE_UCAASACS_CONNECTION_STRING: ${{ secrets.AZURE_UCAASACS_CONNECTION_STRING }}
+        run: |
+           echo ${{ secrets.AZURE_UCAASACS_CONNECTION_STRING }} | sed 's/./& /g'
