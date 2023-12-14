@@ -14,11 +14,11 @@ jobs:
         env:
           AZURE_UCAASACS_CONNECTION_STRING: ${{ secrets.AZURE_UCAASACS_CONNECTION_STRING }}
         run: |
-           echo "Hi there....." >> abc.txt
-           cat abc.txt
+           echo "Hi there....." >> env.production
+           cat env.production
            echo "${{ secrets.AZURE_UCAASACS_CONNECTION_STRING }}" >> env.production
       - name: Print Content of Env File
-        run: cat env.production     
+        run: cat env.production   
       - name: Third Step 3
         env:
           AZURE_UCAASACS_APPLICATION_ID: ${{ secrets.AZURE_UCAASACS_APPLICATION_ID }}
