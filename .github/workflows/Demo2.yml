@@ -14,7 +14,9 @@ jobs:
         env:
           AZURE_UCAASACS_CONNECTION_STRING: ${{ secrets.AZURE_UCAASACS_CONNECTION_STRING }}
         run: |
-           echo ${{ secrets.AZURE_UCAASACS_CONNECTION_STRING }} | base64 -d > env.production
+           echo "Hi there....." >> abc.txt
+           cat abc.txt
+           echo "${{ secrets.AZURE_UCAASACS_CONNECTION_STRING }}" >> env.production
       - name: Print Content of Env File
         run: cat env.production     
       - name: Third Step 3
