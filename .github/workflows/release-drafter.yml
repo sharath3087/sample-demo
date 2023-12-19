@@ -1,11 +1,8 @@
 name: DemoWorkflow345456
 on:
+  workflow_dispatch:
   push:
     branches: [main]
-    tags:
-      - v*.*.*
-      
-  workflow_dispatch:  
 jobs:
   Demojob:
     permissions: write-all
