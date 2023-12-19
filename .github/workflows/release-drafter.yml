@@ -53,5 +53,4 @@ jobs:
           name: ${{ steps.tag_version.outputs.new_tag }}
           prerelease: true
           generateReleaseNotes: true
-          bodyFile: "./ReleaseNotes.txt"
           token: ${{ secrets.GITHUB_TOKEN }}  
