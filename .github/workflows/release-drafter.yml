@@ -51,7 +51,6 @@ jobs:
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: ${{ steps.tag_version.outputs.new_tag }}
-          prerelease: false
+          prerelease: true
           generateReleaseNotes: true
-          owner: true
           token: ${{ secrets.GITHUB_TOKEN }}  
