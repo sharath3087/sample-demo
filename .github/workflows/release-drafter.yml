@@ -1,25 +1,16 @@
-name: DemoWorkflow345456
+name: Release Drafter
+
 on:
   push:
-    branches: [main]
-    tags:
-      - v*.*.*
-      
-  workflow_dispatch:  
+    # branches to consider in the event; optional, defaults to all
+    branches:
+      - main
+
 jobs:
-  Demojob:
-    permissions: write-all
+  update_release_draft:
     runs-on: ubuntu-latest
     steps:
-      - name: First Step 1
-        run: echo "Test Test...."
-      - name: Second Step 2
-        run: echo "${{ github.ref }}"
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Release Drafter
-        uses: release-drafter/release-drafter@v5.25.0   
+      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
