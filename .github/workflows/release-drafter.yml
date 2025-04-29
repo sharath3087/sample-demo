@@ -1,8 +1,6 @@
 name: DemoWorkflow345456
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 jobs:
   Demojob:
     permissions: write-all
