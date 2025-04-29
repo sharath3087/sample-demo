@@ -43,7 +43,6 @@ jobs:
 
       - name: Build Angular Integration web app for Production 
         run: |
-          mkdir ezMigrate-prod
           npm install
           npm run build:prod
           pwd
@@ -51,8 +50,7 @@ jobs:
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
           ls -ltr dist/
-          cp dist/demo-angular-app/* ezMigrate-prod
-          echo "Released ${{ steps.next_tag.outputs.patch }} Build - Prod" > ./ezMigrate-prod/ReleaseVersion.txt
+          echo "Released ${{ steps.next_tag.outputs.patch }} Build - Prod" > ./dist/demo-angular-app/ReleaseVersion.txt
 
       - name: Archive ezMigrate UI Production Build
         uses: vimtor/action-zip@v1
@@ -63,7 +61,6 @@ jobs:
 
       - name: Build Angular Integration web app for QA 
         run: |
-          mkdir ezMigrate-qa
           npm install
           npm run build:qa
           pwd
@@ -71,8 +68,7 @@ jobs:
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
           ls -ltr dist/
-          cp dist/demo-angular-app/* ezMigrate-qa
-          echo "Released ${{ steps.next_tag.outputs.patch }} Build - QA" > ./ezMigrate-qa/ReleaseVersion.txt
+          echo "Released ${{ steps.next_tag.outputs.patch }} Build - QA" > ./dist/demo-angular-app/ReleaseVersion.txt
 
       - name: Archive ezMigrate UI QA Build
         uses: vimtor/action-zip@v1
@@ -86,12 +82,12 @@ jobs:
         with:
           name: ezMigrate-QA-Artifacts-${{ steps.date.outputs.date }}
           path: |
-            ./ezMigrate-qa
+            ./ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip
 
       - name: Upload ezMigrate Prod Zip Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ezMigrate-Prod-Zip-Artifacts-${{ steps.date.outputs.date }}
           path: |
-            ./ezMigrate-prod
+            ./ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip
       
