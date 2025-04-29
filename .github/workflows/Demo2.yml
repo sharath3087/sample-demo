@@ -9,6 +9,44 @@ env:
   JAVA_VERSION: "8"
 
 jobs:
+  create-release-tag:
+    permissions:
+      contents: write
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+
+      - name: Create tag and release
+        id: create_release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: ${{ steps.tag_version.outputs.new_tag }}
+          prerelease: true
+          generateReleaseNotes: true
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Check Output Parameters
+        run: |
+          echo "Got tag name ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Got release version ${{ steps.tag_version.outputs.new_tag }}"
+          echo "RELEASE_TAG in create-release-tag job: ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Release upload URL: ${{ steps.create_release.outputs.upload_url }}"
+          echo "Release output:"
+          echo "${{ toJson(steps.create_release.outputs) }}"
+          for key in $(echo "${{ toJson(steps.create_release.outputs) }}" | jq -r "keys_unsorted[]"); do
+            value=$(echo "${{ toJson(steps.create_release.outputs) }}" | jq -r ".$key")
+            echo "$key: $value"
+          done
+
+    outputs:
+      LATEST_RELEASE_VERSION: ${{ steps.tag_version.outputs.new_tag }}
+      UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
   build:
     runs-on: ubuntu-latest
     steps:
@@ -76,6 +114,3 @@ jobs:
           name: ezMigrate-QA-Artifacts-${{ steps.date.outputs.date }}
           path: |
             ./dist/
-
-      
-      
