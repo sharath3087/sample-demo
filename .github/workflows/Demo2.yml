@@ -82,12 +82,12 @@ jobs:
         with:
           name: ezMigrate-QA-Artifacts-${{ steps.date.outputs.date }}
           path: |
-            ./ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip
+            ./dist/
 
       - name: Upload ezMigrate Prod Zip Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ezMigrate-Prod-Zip-Artifacts-${{ steps.date.outputs.date }}
           path: |
-            ./ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip
+            ./dist/
       
