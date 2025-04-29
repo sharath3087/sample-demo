@@ -43,13 +43,15 @@ jobs:
 
       - name: Build Angular Integration web app for Production 
         run: |
+          mkdir ezMigrate-prod
           npm install
           npm run build:prod
           pwd
           ls -ltr
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
-          echo "Released ${{ steps.next_tag.outputs.patch }} Build - Prod" > ./dist/demo-angular-app/ReleaseVersion.txt
+          cp dist/demo-angular-app/* ezMigrate-prod
+          echo "Released ${{ steps.next_tag.outputs.patch }} Build - Prod" > ./ezMigrate-prod/ReleaseVersion.txt
 
       - name: Archive ezMigrate UI Production Build
         uses: vimtor/action-zip@v1
@@ -60,13 +62,15 @@ jobs:
 
       - name: Build Angular Integration web app for QA 
         run: |
+          mkdir ezMigrate-qa
           npm install
           npm run build:qa
           pwd
           ls -ltr
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
-          echo "Released ${{ steps.next_tag.outputs.patch }} Build - QA" > ./dist/demo-angular-app/ReleaseVersion.txt
+          cp dist/demo-angular-app/* ezMigrate-qa
+          echo "Released ${{ steps.next_tag.outputs.patch }} Build - QA" > ./ezMigrate-qa/ReleaseVersion.txt
 
       - name: Archive ezMigrate UI QA Build
         uses: vimtor/action-zip@v1
@@ -75,10 +79,17 @@ jobs:
           recursive: true
           dest: "ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip"
 
-      - name: Upload ezMigrate QA & Prod Zip Artifacts
+      - name: Upload ezMigrate QA Zip Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ezMigrate-Zip-Artifacts
+          name: ezMigrate-QA-Artifacts-${{ steps.date.outputs.date }}
           path: |
-            ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip
-            ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip
+            ezMigrate-qa
+
+      - name: Upload ezMigrate Prod Zip Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ezMigrate-Prod-Zip-Artifacts-${{ steps.date.outputs.date }}
+          path: |
+            ezMigrate-prod
+      
