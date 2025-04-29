@@ -1,9 +1,8 @@
-
 name: ezMigrate Stage Environment Build-&-Deploy
 
 on:
   workflow_dispatch:
-  
+
 permissions: write-all
 
 env:
@@ -16,8 +15,66 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          
-      - name: Show current directory and files
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Get Commit Short Hash
+        id: hash
+        run: echo "hash=$(git rev-parse --short \"$RELEVANT_SHA\")" >> $GITHUB_OUTPUT
+        env:
+          RELEVANT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Get Latest tag
+        id: current_tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Get next minor version
+        id: next_tag
+        uses: WyriHaximus/github-action-next-semvers@v1
+        with:
+          version: ${{ steps.current_tag.outputs.tag }}
+
+      - name: Use Node.js 22.14.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.14.0"
+
+      - name: Build Angular Integration web app for Production 
         run: |
-          pwd
-          ls -l
+          npm install
+          npm run build:prod
+          mv dist/ezMigrate/browser/* dist/ezMigrate
+          rm -rf dist/ezMigrate/browser
+          echo "Released ${{ steps.next_tag.outputs.patch }} Build - Prod" > ./dist/ezMigrate/ReleaseVersion.txt
+
+      - name: Archive ezMigrate UI Production Build
+        uses: vimtor/action-zip@v1
+        with:
+          files: "./dist/"
+          recursive: true
+          dest: "ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip"
+
+      - name: Build Angular Integration web app for QA 
+        run: |
+          npm install
+          npm run build:qa
+          mv dist/ezMigrate/browser/* dist/ezMigrate
+          rm -rf dist/ezMigrate/browser
+          echo "Released ${{ steps.next_tag.outputs.patch }} Build - QA" > ./dist/ezMigrate/ReleaseVersion.txt
+
+      - name: Archive ezMigrate UI QA Build
+        uses: vimtor/action-zip@v1
+        with:
+          files: "./dist/"
+          recursive: true
+          dest: "ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip"
+
+      - name: Upload ezMigrate QA & Prod Zip Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ezMigrate-Zip-Artifacts
+          path: |
+            ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip
+            ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip
