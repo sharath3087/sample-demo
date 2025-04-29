@@ -45,8 +45,10 @@ jobs:
         run: |
           npm install
           npm run build:prod
-          mv dist/ezMigrate/browser/* dist/ezMigrate
-          rm -rf dist/ezMigrate/browser
+          pwd
+          ls -ltr
+          mv dist/demo-angular-app/browser/* dist/demo-angular-app
+          rm -rf dist/demo-angular-app/browser
           echo "Released ${{ steps.next_tag.outputs.patch }} Build - Prod" > ./dist/ezMigrate/ReleaseVersion.txt
 
       - name: Archive ezMigrate UI Production Build
@@ -60,8 +62,10 @@ jobs:
         run: |
           npm install
           npm run build:qa
-          mv dist/ezMigrate/browser/* dist/ezMigrate
-          rm -rf dist/ezMigrate/browser
+          pwd
+          ls -ltr
+          mv dist/demo-angular-app/browser/* dist/demo-angular-app
+          rm -rf dist/demo-angular-app/browser
           echo "Released ${{ steps.next_tag.outputs.patch }} Build - QA" > ./dist/ezMigrate/ReleaseVersion.txt
 
       - name: Archive ezMigrate UI QA Build
