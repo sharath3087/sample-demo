@@ -1,3 +1,4 @@
+
 name: ezMigrate Stage Environment Build-&-Deploy
 
 on:
@@ -57,7 +58,7 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
 
       - name: Get Commit Short Hash
         id: hash
@@ -94,16 +95,16 @@ jobs:
       - name: Upload ezMigrate Prod Zip Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ezMigrate-prod-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}
+          name: ezMigrate-prod-release-${{ steps.date.outputs.date }}
           path: |
             ./dist/
             
-      - name: Archive ezMigrate UI Prod Build
+      - name: Archive ezMigrate UI QA Build
         uses: vimtor/action-zip@v1
         with:
           files: "./dist/"
           recursive: true
-          dest: "ezMigrate-prod-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}.zip"      
+          dest: "ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip"      
 
       - name: Build Angular Integration web app for QA 
         run: |
@@ -119,7 +120,7 @@ jobs:
       - name: Upload ezMigrate QA Zip Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ezMigrate-qa-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}
+          name: ezMigrate-qa-release-${{ steps.date.outputs.date }}
           path: |
             ./dist/
             
@@ -128,7 +129,7 @@ jobs:
         with:
           files: "./dist/"
           recursive: true
-          dest: "ezMigrate-qa-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}.zip"     
+          dest: "ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip"     
             
        # Upload Release Asset
       - name: Upload Prod ZIP Release Asset
@@ -137,8 +138,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
          upload_url: ${{ needs.create-release-tag.outputs.UPLOAD_URL }}
-         asset_path: ./ezMigrate-prod-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}.zip
-         asset_name: ezMigrate-prod-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}.zip
+         asset_path: ./ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip
+         asset_name: ezMigrate-prod-release-${{ steps.date.outputs.date }}.zip
          asset_content_type: application/zip
          
       - name: Upload QA ZIP Release Asset
@@ -147,6 +148,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
          upload_url: ${{ needs.create-release-tag.outputs.UPLOAD_URL }}
-         asset_path: ./ezMigrate-qa-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}.zip
-         asset_name: ezMigrate-qa-release-${{ steps.date.outputs.date }}-${{steps.hash.outputs.hash}}.zip
+         asset_path: ./ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip
+         asset_name: ezMigrate-qa-release-${{ steps.date.outputs.date }}.zip
          asset_content_type: application/zip
