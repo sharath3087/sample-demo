@@ -15,31 +15,23 @@ jobs:
       contents: write
       pull-requests: read
     runs-on: ubuntu-latest
-    steps:
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GH_TOKEN }}
-          create_tag: false
+    steps:         
+      - name: Get Latest tag
+        id: current_tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
 
-      - name: Sanitize bumped tag
-        if: always()
-        id: sanitize_tag
-        uses: actions/github-script@v6
+      - name: Get next minor version
+        id: next_tag
+        uses: WyriHaximus/github-action-next-semvers@v1
         with:
-          script: |
-            const rawTag = "${{ steps.tag_version.outputs.new_tag }}";
-            const cleaned = rawTag.replace(/-[^.]+?\.\d+$/, "");
-            core.info(`Raw tag: ${rawTag} → Cleaned tag: ${cleaned}`);
-            core.setOutput("clean", cleaned);      
+          version: ${{ steps.current_tag.outputs.tag }}     
           
       - name: Create tag and release
         id: create_release
         uses: ncipollo/release-action@v1.14.0
         with:
-          tag: ${{ steps.sanitize_tag.outputs.clean }}
-          name: ${{ steps.sanitize_tag.outputs.clean }}
+          tag: ${{ steps.next_tag.outputs.patch }}
+          name: ${{ steps.next_tag.outputs.patch }}
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GH_TOKEN }}
