@@ -21,6 +21,7 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GH_TOKEN }}
+          create_tag: false
 
       - name: Sanitize bumped tag
         if: always()
