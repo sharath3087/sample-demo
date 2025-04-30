@@ -30,6 +30,7 @@ jobs:
             repo: context.repo.repo,
             per_page: 1
             });
+            echo "Git Hub response $tags"
             const latestTag = tags.data[0]?.name;
             if (!latestTag) {
             throw new Error("No tags found in the repository.");
@@ -41,23 +42,3 @@ jobs:
 
       - name: Debug final tag
         run: echo "Resolved tag--> ${{ steps.resolve_tag.outputs.tag }}"
-
-      - name: Retrieve ezMigrate Production Release ZIP
-        id: release_download
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          version: tags/${{ steps.resolve_tag.outputs.tag }}
-          regex: true
-          file: "ezMigrate-prod-release-.*\\.zip"
-          target: "./"
-
-      - name: Unzip ezMigrate prod release build
-        run: unzip -qq ezMigrate-prod-release-*.zip -d ./
-
-      - name: Check the folder contents
-        run: |
-          pwd
-          ls -ltr
-          ls -ltr ./demo-angular-app
-          mv demo-angular-app demo-angular
-          ls -ltr
