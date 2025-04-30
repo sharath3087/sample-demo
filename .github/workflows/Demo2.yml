@@ -21,25 +21,32 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GH_TOKEN }}
-          append_to_pre_release_tag: ""
-          pre_release_branches: master
-          release_branches: master
+
+      - name: Sanitize bumped tag
+        id: sanitize_tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const rawTag = "${{ steps.tag_version.outputs.new_tag }}";
+            const cleaned = rawTag.replace(/-[^.]+?\.\d+$/, "");
+            core.info(`Raw tag: ${rawTag} → Cleaned tag: ${cleaned}`);
+            core.setOutput("clean", cleaned);      
           
       - name: Create tag and release
         id: create_release
         uses: ncipollo/release-action@v1.14.0
         with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: ${{ steps.tag_version.outputs.new_tag }}
+          tag: ${{ steps.sanitize_tag.outputs.clean }}
+          name: ${{ steps.sanitize_tag.outputs.clean }}
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Check Output Parameters
         run: |
-          echo "Got tag name ${{ steps.tag_version.outputs.new_tag }}"
-          echo "Got release version ${{ steps.tag_version.outputs.new_tag }}"
-          echo "RELEASE_TAG in create-release-tag job: ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Got tag name ${{ steps.sanitize_tag.outputs.clean }}"
+          echo "Got release version ${{ steps.sanitize_tag.outputs.clean }}"
+          echo "RELEASE_TAG in create-release-tag job: ${{ steps.sanitize_tag.outputs.clean }}"
           echo "Release upload URL: ${{ steps.create_release.outputs.upload_url }}"
           echo "Release output:"
           echo "${{ toJson(steps.create_release.outputs) }}"
@@ -49,7 +56,7 @@ jobs:
           done
 
     outputs:
-      LATEST_RELEASE_VERSION: ${{ steps.tag_version.outputs.new_tag }}
+      LATEST_RELEASE_VERSION: ${{ steps.sanitize_tag.outputs.clean }}
       UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
   build:
     runs-on: ubuntu-latest
