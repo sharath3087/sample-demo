@@ -25,13 +25,18 @@ jobs:
           script: |
             let versionInput = "${{ env.RELEASE_VERSION_INPUT }}";
             if (versionInput === "latest") {
-              const latest = await github.rest.repos.getLatestRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              core.setOutput("tag", latest.data.tag_name);
+            const tags = await github.rest.repos.listTags({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            per_page: 1
+            });
+            const latestTag = tags.data[0]?.name;
+            if (!latestTag) {
+            throw new Error("No tags found in the repository.");
+            }
+            core.setOutput("tag", latestTag);
             } else {
-              core.setOutput("tag", versionInput);
+            core.setOutput("tag", versionInput);
             }
 
       - name: Debug final tag
