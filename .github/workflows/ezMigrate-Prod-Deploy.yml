@@ -1,51 +1,37 @@
-name: DemoWorkflow345456
+# Workflow to acquire release and deploy to Azure cloud the License Server components
+name: ezMigrate to prod release
+
 on:
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Release Version (use tags/vxx.xx.xx format)"
+        required: true
+        default: "latest"
+
 jobs:
-  Demojob:
-    permissions: write-all
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: First Step 1
-        run: echo "Test Test...."
-      - name: Second Step 2
-        run: echo "${{ github.ref }}"
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Get Commit Short Hash
-        id: hash
-        run: echo "hash=$(git rev-parse --short "$RELEVANT_SHA")" >> $GITHUB_OUTPUT
-        env:
-          RELEVANT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}    
-      - name: Get latest release details
-        id: release_details
-        uses: cardinalby/git-get-release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          latest: true
+      - name: Install Zip
+        uses: montudor/action-zip@v1
 
-      - name: Get Latest Release commit hash
-        id: get_commit
-        uses: actions/github-script@v2.1.0
+      - name: Retrieve ezMigrate Production Release ZIP
+        id: release_download
+        uses: dsaltares/fetch-gh-release-asset@master
         with:
-          script: |
-            return "${{fromJSON(steps.release_details.outputs.assets)[0].name}}".split('-').pop().split('.').shift();
-      - name: Create Release Notes from commit history
-        id: list_messages
-        run: git log --pretty=format:"%an, %ae - %s" -1 --stat > ReleaseNotes.txt
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create a GitHub release
-        uses: ncipollo/release-action@v1.12.0
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: ${{ steps.tag_version.outputs.new_tag }}
-          prerelease: true
-          generateReleaseNotes: true
-          token: ${{ secrets.GITHUB_TOKEN }}  
+          version: "${{ github.event.inputs.release_version }}"  # Or hardcode a version like "latest"
+          regex: true
+          file: "ezMigrate-prod-release-.*\\.zip"
+          target: "./"
+
+      - name: Unzip ezMigrate prod release build
+        run: unzip -qq ezMigrate-prod-release-*.zip -d ./
+
+      - name: Check the folder contents
+        run: |
+          pwd
+          ls -ltr
+          ls -ltr ./demo-angular-app
+          mv demo-angular-app demo-angular
+          ls -ltr
