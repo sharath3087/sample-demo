@@ -60,12 +60,6 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
 
-      - name: Get Commit Short Hash
-        id: hash
-        run: echo "hash=$(git rev-parse --short \"$RELEVANT_SHA\")" >> $GITHUB_OUTPUT
-        env:
-          RELEVANT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-
       - name: Get Latest tag
         id: current_tag
         uses: WyriHaximus/github-action-get-previous-tag@v1
@@ -90,7 +84,7 @@ jobs:
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
           ls -ltr dist/
-          echo "Released ${{ steps.next_tag.outputs.patch }} Build - Prod" > ./dist/demo-angular-app/ReleaseVersion.txt
+          echo "Released ${{ needs.create-release-tag.outputs.new_tag }} Build - Prod" > ./dist/demo-angular-app/ReleaseVersion.txt
           
       - name: Upload ezMigrate Prod Zip Artifacts
         uses: actions/upload-artifact@v4
@@ -115,7 +109,7 @@ jobs:
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
           ls -ltr dist/
-          echo "Released ${{ steps.next_tag.outputs.patch }} Build - QA" > ./dist/demo-angular-app/ReleaseVersion.txt
+          echo "Released ${{ needs.create-release-tag.outputs.new_tag }} Build - QA" > ./dist/demo-angular-app/ReleaseVersion.txt
           
       - name: Upload ezMigrate QA Zip Artifacts
         uses: actions/upload-artifact@v4
