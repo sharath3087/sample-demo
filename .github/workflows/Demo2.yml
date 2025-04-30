@@ -55,7 +55,7 @@ jobs:
           done
 
     outputs:
-      LATEST_RELEASE_VERSION: ${{ steps.sanitize_tag.outputs.clean }}
+      LATEST_RELEASE_VERSION: v${{ steps.next_tag.outputs.patch }}
       UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
   build:
     runs-on: ubuntu-latest
