@@ -21,9 +21,10 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GH_TOKEN }}
-          append_to_pre_release_tag: false
-          custom_pre_release_tag: ""
-
+          append_to_pre_release_tag: ""
+          pre_release_branches: master
+          release_branches: master
+          
       - name: Create tag and release
         id: create_release
         uses: ncipollo/release-action@v1.14.0
