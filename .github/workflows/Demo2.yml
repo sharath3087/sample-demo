@@ -23,6 +23,7 @@ jobs:
           github_token: ${{ secrets.GH_TOKEN }}
 
       - name: Sanitize bumped tag
+        if: always()
         id: sanitize_tag
         uses: actions/github-script@v6
         with:
