@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Release Version (use tags/vxx.xx.xx format)"
+        description: "Release Version (use tag:- vxx.xx.xx format)"
         required: true
         default: "latest"
 
@@ -46,7 +46,7 @@ jobs:
         id: release_download
         uses: dsaltares/fetch-gh-release-asset@master
         with:
-          version: ${{ steps.resolve_tag.outputs.tag }}
+          version: tags/${{ steps.resolve_tag.outputs.tag }}
           regex: true
           file: "ezMigrate-prod-release-.*\\.zip"
           target: "./"
