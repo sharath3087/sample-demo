@@ -16,36 +16,42 @@ jobs:
       pull-requests: read
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Calculate next tag
+        uses: actions/github-script@v6
+        id: versioning
         with:
-          fetch-depth: 0
-          
-      - name: Get Latest tag
-        id: current_tag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-
-      - name: Get next minor version
-        id: next_tag
-        uses: WyriHaximus/github-action-next-semvers@v1
-        with:
-          version: ${{ steps.current_tag.outputs.tag }}     
+          script: |
+           const semver = require('semver');
+           const tags = await github.rest.repos.listTags({
+           owner: context.repo.owner,
+           repo: context.repo.repo,
+           per_page: 1,
+           });
+           const current = tags.data[0]?.name || 'v0.0.0';
+           const next = semver.inc(current, 'patch');
+           core.info(`Current tag: ${current}`);
+           core.info(`Next tag: ${next}`);
+           core.setOutput("current", current);
+           core.setOutput("next", next);
+           
+      - name: Next Github tag version
+        run: echo "Resolved tag--> ${{ steps.versioning.outputs.next }}"     
           
       - name: Create tag and release
         id: create_release
         uses: ncipollo/release-action@v1.14.0
         with:
-          tag: v${{ steps.next_tag.outputs.patch }}
-          name: v${{ steps.next_tag.outputs.patch }}
+          tag: ${{ steps.versioning.outputs.next }}
+          name: ${{ steps.versioning.outputs.next }}
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Check Output Parameters
         run: |
-          echo "Got tag name v${{ steps.next_tag.outputs.patch }}"
-          echo "Got release version v${{ steps.next_tag.outputs.patch }}"
-          echo "RELEASE_TAG in create-release-tag job: v${{ steps.next_tag.outputs.patch }}"
+          echo "Got tag name ${{ steps.versioning.outputs.next }}"
+          echo "Got release version ${{ steps.versioning.outputs.next }}"
+          echo "RELEASE_TAG in create-release-tag job: ${{ steps.versioning.outputs.next }}"
           echo "Release upload URL: ${{ steps.create_release.outputs.upload_url }}"
           echo "Release output:"
           echo "${{ toJson(steps.create_release.outputs) }}"
@@ -55,7 +61,7 @@ jobs:
           done
 
     outputs:
-      LATEST_RELEASE_VERSION: v${{ steps.next_tag.outputs.patch }}
+      LATEST_RELEASE_VERSION: ${{ steps.versioning.outputs.next }}
       UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
   build:
     runs-on: ubuntu-latest
