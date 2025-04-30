@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Input tag version (input-tag format:- vxx.xx.xx)"
+        description: "Github repo tag version (tag format:- vxx.xx.xx)"
         required: true
         default: "latest"
 
