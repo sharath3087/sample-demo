@@ -22,6 +22,7 @@ jobs:
         with:
           github_token: ${{ secrets.GH_TOKEN }}
           append_to_pre_release_tag: false
+          custom_pre_release_tag: ""
 
       - name: Create tag and release
         id: create_release
