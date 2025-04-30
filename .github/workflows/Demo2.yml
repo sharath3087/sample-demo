@@ -15,7 +15,12 @@ jobs:
       contents: write
       pull-requests: read
     runs-on: ubuntu-latest
-    steps:         
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
       - name: Get Latest tag
         id: current_tag
         uses: WyriHaximus/github-action-get-previous-tag@v1
