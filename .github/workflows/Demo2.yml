@@ -84,7 +84,7 @@ jobs:
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
           ls -ltr dist/
-          echo "Released ${{ needs.create-release-tag.outputs.new_tag }} Build - Prod" > ./dist/demo-angular-app/ReleaseVersion.txt
+          echo "Released ${{ needs.tag_version.outputs.new_tag }} Build - Prod" > ./dist/demo-angular-app/ReleaseVersion.txt
           
       - name: Upload ezMigrate Prod Zip Artifacts
         uses: actions/upload-artifact@v4
@@ -109,7 +109,7 @@ jobs:
           mv dist/demo-angular-app/browser/* dist/demo-angular-app
           rm -rf dist/demo-angular-app/browser
           ls -ltr dist/
-          echo "Released ${{ needs.create-release-tag.outputs.new_tag }} Build - QA" > ./dist/demo-angular-app/ReleaseVersion.txt
+          echo "Released ${{ needs.tag_version.outputs.new_tag }} Build - QA" > ./dist/demo-angular-app/ReleaseVersion.txt
           
       - name: Upload ezMigrate QA Zip Artifacts
         uses: actions/upload-artifact@v4
