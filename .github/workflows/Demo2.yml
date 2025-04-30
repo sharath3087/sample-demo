@@ -35,17 +35,17 @@ jobs:
         id: create_release
         uses: ncipollo/release-action@v1.14.0
         with:
-          tag: ${{ steps.next_tag.outputs.patch }}
-          name: ${{ steps.next_tag.outputs.patch }}
+          tag: v${{ steps.next_tag.outputs.patch }}
+          name: v${{ steps.next_tag.outputs.patch }}
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Check Output Parameters
         run: |
-          echo "Got tag name ${{ steps.sanitize_tag.outputs.clean }}"
-          echo "Got release version ${{ steps.sanitize_tag.outputs.clean }}"
-          echo "RELEASE_TAG in create-release-tag job: ${{ steps.sanitize_tag.outputs.clean }}"
+          echo "Got tag name v${{ steps.next_tag.outputs.patch }}"
+          echo "Got release version v${{ steps.next_tag.outputs.patch }}"
+          echo "RELEASE_TAG in create-release-tag job: v${{ steps.next_tag.outputs.patch }}"
           echo "Release upload URL: ${{ steps.create_release.outputs.upload_url }}"
           echo "Release output:"
           echo "${{ toJson(steps.create_release.outputs) }}"
