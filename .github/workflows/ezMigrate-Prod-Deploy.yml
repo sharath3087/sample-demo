@@ -30,7 +30,7 @@ jobs:
             repo: context.repo.repo,
             per_page: 1
             });
-            echo "Git Hub response $tags"
+            core.info(`GitHub response: ${JSON.stringify(tags, null, 2)}`);
             const latestTag = tags.data[0]?.name;
             if (!latestTag) {
             throw new Error("No tags found in the repository.");
