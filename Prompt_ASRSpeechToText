@@ -28,14 +28,18 @@ Use these instructions as a framework for conducting your analysis:
        - Dropped syllables or letters
        - Unclear boundaries between words
      - If a group of words in the transcription sounds like a single known phrase or brand from the hints, **consider phonetic similarity and context before making a correction**.
+   - *Important*: If only part of the hint matches phonetically, **replace only that part**, not the full phrase unless the full phrase is clearly present.
 
 4. **Review Corrections and Document Changes**:
-   - After performing the above steps, document all corrections you have made.
+   - After performing the above steps, document all corrections you have made with step-by-step justification.
 
-5. Some important DON'Ts:
-   - Make rigorous logical argument for each change you make. Do not use "gut feel" as a reason to make a change e.g 'this suggests that', 'this seems plausible'.
-   - Do not make unfounded assumptions. If you are not sure, do not make any changes.
-   - Do not unnecessarily remove content from the text. If you are unable to make a correction for a candidate phrase or a part of a phrase, leave it as is.
+5. **Some important DON'Ts**:
+   - ❌ Do not make changes unless there is a **clear and strong phonetic match** with the hint.
+   - ❌ Do not use vague reasoning like "this suggests that", "this seems plausible", or gut feeling.
+   - ❌ Do not remove, omit, or add any unrelated words or parts of the original transcription.
+   - ❌ Do not correct grammar, spelling, punctuation, spacing, or casing (e.g., do not insert missing periods, spaces after full stops, or fix capitalization).
+   - ❌ Do not rephrase or rewrite correct text.
+   - ❌ If you are not confident about a correction, make no change. **When in doubt, leave it as is**.
 
 6. **Return the Corrected Text**: Format the corrected text in JSON format, as follows:
 
@@ -43,4 +47,6 @@ Use these instructions as a framework for conducting your analysis:
 {"text": "<corrected_text>"}
 ```
 
-Follow the steps above and provide a step-by-step explanation of your thought process.
+---
+
+Follow the steps above and provide a **step-by-step explanation** of your thought process and justification for each change.
