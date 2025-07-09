@@ -223,7 +223,57 @@ hints: ["Mindoula Health Inc."]
 
 ---
 
-#### Example 7: No Formatting or Punctuation Corrections
+#### Example 7: No Phonetic no change in original text
+
+**User:**
+```
+text: "Thank you for calling Green Valley Orthopedics. Our office is currently closed. Please leave a message and we will return your call as soon as possible."
+hints: ["Green Family Dental"]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. **Hint List**:
+   - ["Green Family Dental"]
+
+2. **Identify Candidate Phrases**:
+   - From the transcription: "Green Valley Orthopedics"
+   - This is a potential brand or business name
+   - From the hint: "Green Family Dental"
+
+3. **Phonetic and Semantic Analysis**:
+   - **"Green"** is a common word that matches exactly → ✅
+   - **"Valley" vs "Family"**:
+     - "Valley" (/ˈvæli/) vs "Family" (/ˈfæməli/ or /ˈfæmli/):
+       • Though they share the “-ly” sound, the initial consonant clusters differ significantly (V vs F, and syllabic structure)
+       • Common ASR systems are unlikely to confuse these without very noisy input
+       • There is **no strong phonetic justification** for a correction
+   - **"Orthopedics" vs "Dental"**:
+     - These are completely unrelated medical disciplines
+     - Phonetically dissimilar and contextually distinct
+       • "Orthopedics" relates to bones/joints
+       • "Dental" relates to teeth
+     - No overlap in syllables or purpose
+
+4. **Contextual Check**:
+   - Caller is reaching a medical provider’s voicemail
+   - "Green Valley Orthopedics" appears to be the accurate transcription based on what was said
+   - There is no evidence that the speaker meant “Green Family Dental”
+   - Substituting the hint would introduce incorrect information
+
+5. ✅ Final Decision:
+   - No evidence of ASR mistranscription
+   - No correction should be made
+
+# Correction:
+{"text": "Thank you for calling Green Valley Orthopedics. Our office is currently closed. Please leave a message and we will return your call as soon as possible."}
+```
+
+
+---
+
+#### Example 8: No Formatting or Punctuation Corrections
 
 **User:**
 ```
@@ -245,36 +295,4 @@ hints: ["Good Morning Clinic"]
 
 # Correction:
 {"text": "good morning welcome to the clinicThank you for calling"}
-```
-
-
----
-
-#### Example 8: Partial & Full Hint Replacement Only
-
-**User:**
-```
-text: "Our new partner firm is Stello Health Inc. Please welcome them."
-hints: ["Stello Health Solutions"]
-```
-
-**System:**
-```
-# Step-by-Step Reasoning:
-1. Hint list: ["Stello Health Solutions"]
-2. Identify candidate: "Stello Health Inc."
-3. Compare words:
-   - "Stello" matches exactly
-   - "Health" matches exactly
-   - "Inc." vs "Solutions":
-     • Different words, but both serve as the company suffix
-     • No phonetic alignment between "Inc." (/ɪŋk/) and "Solutions" (/səˈluːʃənz/) → this is a semantic mismatch
-4. **Partial match rule**:
-   - Replace only the **suffix** that does not align:
-     • Leave "Stello Health"
-     • Replace "Inc." → "Solutions"
-5. Do not alter any other text
-
-# Correction:
-{"text": "Our new partner firm is Stello Health Solutions. Please welcome them."}
 ```
