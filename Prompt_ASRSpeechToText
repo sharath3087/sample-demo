@@ -56,45 +56,225 @@ Follow the steps above and provide a **step-by-step explanation** of your though
 
 ### FEW-SHOT EXAMPLES
 
-#### Example 1
-Input:
+#### Example 1: Exact Phonetic Match and Full Replacement
+
+**User:**
+```
 text: "You have reached the voicemail of Christina Williamson with Mandula Hill. I'm sorry I'm not available to take your call personally at this time."
 hints: ["Mindoula Health Inc"]
+```
 
-Reasoning:
-- "Mandula Hill" is phonetically similar to "Mindoula Health"
-- Both contain similar syllables: "Man-du-la" → "Min-dou-la", "Hill" → "Health"
-- Strong contextual alignment in voicemail greeting.
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Mindoula Health Inc"]
+2. Identify candidate phrase: "Mandula Hill"
+3. Phonetic analysis:
+   - "Mandula" vs "Mindoula":
+     • Both share consonant structure m‑n‑d‑l‑ə
+     • Vowel shift (a → i) common in ASR errors
+   - "Hill" vs "Health":
+     • Initial H preserved
+     • Vowel and ending consonant differ but context supports
+4. Context check:
+   - Occurs in voicemail greeting, matching a healthcare brand
+5. Decision:
+   - Replace "Mandula Hill" → "Mindoula Health"
 
-Correction:
+# Correction:
 {"text": "You have reached the voicemail of Christina Williamson with Mindoula Health. I'm sorry I'm not available to take your call personally at this time."}
+```
 
 ---
 
-#### Example 2
-Input:
+#### Example 2: Multiword Blend Replacement
+
+**User:**
+```
 text: "You have reached Peter Boutros that standing in your homes with Exp Realty."
 hints: ["Stunning NJ Homes"]
+```
 
-Reasoning:
-- "that standing in your homes" → phonetic blend of "Stunning NJ Homes"
-- "standing" and "stunning" have similar phonetic structure
-- "in your" when spoken fast may sound like "NJ"
-- Context suggests a real estate brand is intended
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Stunning NJ Homes"]
+2. Identify candidate phrase: "that standing in your homes"
+3. Phonetic breakdown:
+   - "standing" (/ˈstændɪŋ/) vs "stunning" (/ˈstʌnɪŋ/):
+     • Consonant frame st‑n‑ng matches
+     • Vowel difference common in ASR
+   - "in your" (/ɪn jʊr/) vs "NJ" (/ɛn dʒeɪ/):
+     • Fast speech blends to nasal+affricate
+   - "homes" vs "homes" identical
+4. Context check:
+   - Real estate context implies brand name
+5. Decision:
+   - Replace "that standing in your homes" → "that Stunning NJ Homes"
+   - Keep "Exp Realty" unchanged
 
-Correction:
-{"text": "You have reached Peter Boutros at Stunning NJ Homes with Exp Realty."}
+# Correction:
+{"text": "You have reached Peter Boutros that Stunning NJ Homes with Exp Realty."}
+```
 
 ---
 
-#### Example 3
-Input:
+#### Example 3: Partial Phrase Replacement
+
+**User:**
+```
 text: "Hi, you've reached the voicemail of Kayla Meyer with my doula help."
 hints: ["Mindoula Health Inc"]
+```
 
-Reasoning:
-- "my doula help" sounds like "Mindoula Health"
-- Strong phonetic alignment, especially "doula" vs "Mindoula"
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Mindoula Health Inc"]
+2. Identify candidate phrase: "my doula help"
+3. Phonetic analysis:
+   - "doula" (/ˈduːlə/) matches part of "Mindoula"
+   - "help" (/hɛlp/) vs "health" (/hɛlθ/):
+     • Vowel and consonant pattern align
+4. Decision:
+   - Replace "my doula help" → "Mindoula Health"
 
-Correction:
+# Correction:
 {"text": "Hi, you've reached the voicemail of Kayla Meyer with Mindoula Health."}
+```
+
+---
+
+#### Example 4: Multi-Hint Disambiguation
+
+**User:**
+```
+text: "Can you reach the voicemail for Jamie Tillman, Operations Manager with Mindula Caremind House? I apologize, but I could not get to your telephone call."
+hints: ["Mindoula Health Inc.", "Axa Venture Partners"]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Mindoula Health Inc.", "Axa Venture Partners"]
+2. Candidate phrase: "Mindula Caremind House"
+3. Breakdown:
+   - "Mindula" → "Mindoula" (hint 1)
+   - "Caremind" → no hint match, leave unchanged
+   - "House" → "Health" (hint 1)
+4. Decision:
+   - Use hint 1 for both replacements
+   - Mindula → Mindoula; House → Health
+
+# Correction:
+{"text": "Can you reach the voicemail for Jamie Tillman, Operations Manager with Mindoula Caremind Health? I apologize, but I could not get to your telephone call."}
+```
+
+---
+
+#### Example 5: Negative Case — No Change
+
+**User:**
+```
+text: "Thanks for calling. Please hold while we connect you with your licensed insurance agent. Welcome to Integrity Benefits Services."
+hints: ["Integrity Marketing Group"]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Integrity Marketing Group"]
+2. Scan text: "Integrity Benefits Services"
+3. Phonetic check:
+   - "Benefits Services" vs "Marketing Group": no overlap
+4. Decision:
+   - No phonetic or semantic match → leave unchanged
+
+# Correction:
+{"text": "Thanks for calling. Please hold while we connect you with your licensed insurance agent. Welcome to Integrity Benefits Services."}
+```
+
+
+---
+
+#### Example 6: No Phonetic Match → No Change
+
+**User:**
+```
+text: "Hello, thank you for calling Sunrise Dental. We’re closed on Sundays. Please leave a message."
+hints: ["Mindoula Health Inc."]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Mindoula Health Inc."]
+2. Scan transcription: "Sunrise Dental"
+3. Check phonetic similarity:
+   - Sunrise /ˈsʌnˌraɪz/ vs Mindoula /maɪnˈduːlə/  → No shared consonant or vowel patterns
+   - Dental /ˈdɛntəl/ vs Health /hɛlθ/             → Different structures and stresses
+4. No candidate phrase meets the phonetic threshold
+5. The sentence is valid and needs no correction
+
+# Correction:
+{"text": "Hello, thank you for calling Sunrise Dental. We’re closed on Sundays. Please leave a message."}
+```
+
+
+---
+
+#### Example 7: No Formatting or Punctuation Corrections
+
+**User:**
+```
+text: "good morning welcome to the clinicThank you for calling"
+hints: ["Good Morning Clinic"]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Good Morning Clinic"]
+2. Identify potential issues:
+   - Text has missing capitalization, missing spaces, missing punctuation
+3. **IMPORTANT**: We are **not** to fix grammar, casing, spacing, or punctuation unless it affects a hint match
+4. Check phonetic match:
+   - "good morning" is identical in letters and sound
+   - "clinicThank" merges two words but does not align with a hint differently
+5. No hint-driven correction needed; formatting errors are out‑of‑scope
+
+# Correction:
+{"text": "good morning welcome to the clinicThank you for calling"}
+```
+
+
+---
+
+#### Example 8: Partial & Full Hint Replacement Only
+
+**User:**
+```
+text: "Our new partner firm is Stello Health Inc. Please welcome them."
+hints: ["Stello Health Solutions"]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Stello Health Solutions"]
+2. Identify candidate: "Stello Health Inc."
+3. Compare words:
+   - "Stello" matches exactly
+   - "Health" matches exactly
+   - "Inc." vs "Solutions":
+     • Different words, but both serve as the company suffix
+     • No phonetic alignment between "Inc." (/ɪŋk/) and "Solutions" (/səˈluːʃənz/) → this is a semantic mismatch
+4. **Partial match rule**:
+   - Replace only the **suffix** that does not align:
+     • Leave "Stello Health"
+     • Replace "Inc." → "Solutions"
+5. Do not alter any other text
+
+# Correction:
+{"text": "Our new partner firm is Stello Health Solutions. Please welcome them."}
+```
