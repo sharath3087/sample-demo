@@ -10,7 +10,7 @@ Use these instructions as a framework for conducting your analysis:
     Review the transcribed text to locate words or phrases that appear to be mistranscribed. These may include:
     - Single words
     - Groups of words that together may suggest a misinterpreted phrase
-
+    
 2. **Correct Single Words**:
    - If a single word appears similar to one of the hints but differs only in spelling, replace the word in the text with the correct spelling provided in the hint.
    - *Note*: If the hint is a multiword phrase, replace only the portion of the hint that directly corresponds to the spelling correction needed, rather than the entire hint.
@@ -31,10 +31,14 @@ Use these instructions as a framework for conducting your analysis:
      - If a group of words in the transcription sounds like a single known phrase or brand from the hints, **consider phonetic similarity and context before making a correction**.
    - *Important*: If only part of the hint matches phonetically, **replace only that part**, not the full phrase unless the full phrase is clearly present.
 
-4. **Review Corrections and Document Changes**:
+4. **Correct Multiple Occurrences**:
+     - Important: Review the entire text and correct every valid match, even if the same hint appears multiple times.
+     - Do not stop after the first correction—check and fix all matching parts before finishing.
+
+5. **Review Corrections and Document Changes**:
    - After performing the above steps, document all corrections you have made with step-by-step justification.
 
-5. **Some important DON'Ts**:
+6. **Some important DON'Ts**:
    - ❌ Do not make changes unless there is a **clear and strong phonetic match** with the hint.
    - ❌ Do not use vague reasoning like "this suggests that", "this seems plausible", or gut feeling.
    - ❌ Do not remove, omit, or add any unrelated words or parts of the original transcription.
@@ -42,7 +46,7 @@ Use these instructions as a framework for conducting your analysis:
    - ❌ Do not rephrase or rewrite correct text.
    - ❌ If you are not confident about a correction, make no change. **When in doubt, leave it as is**.
 
-6. **Return the Corrected Text**: Format the corrected text in JSON format, as follows:
+7. **Return the Corrected Text**: Format the corrected text in JSON format, as follows:
 
 ```
 {"text": "<corrected_text>"}
@@ -145,30 +149,35 @@ hints: ["Mindoula Health Inc"]
 
 ---
 
-#### Example 4: Multi-Hint Disambiguation
+#### Example 4:  Matche for multiple occurences
 
 **User:**
 ```
-text: "Can you reach the voicemail for Jamie Tillman, Operations Manager with Mindula Caremind House? I apologize, but I could not get to your telephone call."
-hints: ["Mindoula Health Inc.", "Axa Venture Partners"]
+text: "You have reached Mindula and I work at Mindula Hills. Please leave a message."
+hints: ["Mindoula Health Inc"]
 ```
 
 **System:**
 ```
 # Step-by-Step Reasoning:
-1. Hint list: ["Mindoula Health Inc.", "Axa Venture Partners"]
-2. Candidate phrase: "Mindula Caremind House"
-3. Breakdown:
-   - "Mindula" → "Mindoula" (hint 1)
-   - "Caremind" → no hint match, leave unchanged
-   - "House" → "Health" (hint 1)
-4. Decision:
-   - Use hint 1 for both replacements
-   - Mindula → Mindoula; House → Health
+1. Hint: ["Mindoula Health Inc"]
+2. First Match — "Mindula" → "Mindoula"
+   - Phonetic match:
+     • "Mindula" (/mɪnˈduːlə/) vs "Mindoula" (/maɪnˈduːlə/)
+     • Same consonant frame: m‑n‑d‑l
+     • Vowel shift (ɪ → aɪ) common in ASR
+3. Second Match — "Mindula Hills" → "Mindoula Health"
+   - "Mindula" same as above
+   - "Hills" (/hɪlz/) vs "Health" (/hɛlθ/):
+     • Both start with /h/, end with /l/
+     • Sibilant /z/ vs fricative /θ/ is a common ASR confusion
+     • Context: "I work at ___" suggests organization
+4. Decision: Strong phonetic and contextual match in both cases.
 
 # Correction:
-{"text": "Can you reach the voicemail for Jamie Tillman, Operations Manager with Mindoula Caremind Health? I apologize, but I could not get to your telephone call."}
+{"text": "You have reached Mindoula and I work at Mindoula Health. Please leave a message."}
 ```
+
 
 ---
 
@@ -223,57 +232,7 @@ hints: ["Mindoula Health Inc."]
 
 ---
 
-#### Example 7: No Phonetic no change in original text
-
-**User:**
-```
-text: "Thank you for calling Green Valley Orthopedics. Our office is currently closed. Please leave a message and we will return your call as soon as possible."
-hints: ["Green Family Dental"]
-```
-
-**System:**
-```
-# Step-by-Step Reasoning:
-1. **Hint List**:
-   - ["Green Family Dental"]
-
-2. **Identify Candidate Phrases**:
-   - From the transcription: "Green Valley Orthopedics"
-   - This is a potential brand or business name
-   - From the hint: "Green Family Dental"
-
-3. **Phonetic and Semantic Analysis**:
-   - **"Green"** is a common word that matches exactly → ✅
-   - **"Valley" vs "Family"**:
-     - "Valley" (/ˈvæli/) vs "Family" (/ˈfæməli/ or /ˈfæmli/):
-       • Though they share the “-ly” sound, the initial consonant clusters differ significantly (V vs F, and syllabic structure)
-       • Common ASR systems are unlikely to confuse these without very noisy input
-       • There is **no strong phonetic justification** for a correction
-   - **"Orthopedics" vs "Dental"**:
-     - These are completely unrelated medical disciplines
-     - Phonetically dissimilar and contextually distinct
-       • "Orthopedics" relates to bones/joints
-       • "Dental" relates to teeth
-     - No overlap in syllables or purpose
-
-4. **Contextual Check**:
-   - Caller is reaching a medical provider’s voicemail
-   - "Green Valley Orthopedics" appears to be the accurate transcription based on what was said
-   - There is no evidence that the speaker meant “Green Family Dental”
-   - Substituting the hint would introduce incorrect information
-
-5. ✅ Final Decision:
-   - No evidence of ASR mistranscription
-   - No correction should be made
-
-# Correction:
-{"text": "Thank you for calling Green Valley Orthopedics. Our office is currently closed. Please leave a message and we will return your call as soon as possible."}
-```
-
-
----
-
-#### Example 8: No Formatting or Punctuation Corrections
+#### Example 7: No Formatting or Punctuation Corrections
 
 **User:**
 ```
