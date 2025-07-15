@@ -149,7 +149,7 @@ hints: ["Mindoula Health Inc"]
 
 ---
 
-#### Example 4:  Matche for multiple occurences
+#### Example 4:  Match for multiple occurences
 
 **User:**
 ```
@@ -178,10 +178,34 @@ hints: ["Mindoula Health Inc"]
 {"text": "You have reached Mindoula and I work at Mindoula Health. Please leave a message."}
 ```
 
+#### Example 5: No Correction Due to Context Mismatch
+
+**User:**
+```
+text: "This is Janet from Manuela Real Estate calling about your property listing."
+hints: ["Mindoula Health Inc"]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Mindoula Health Inc"]
+2. Identify candidate phrase: "Manuela Real Estate"
+3. Phonetic check:
+   - "Manuela" resembles "Mindoula" phonetically, but not enough to match
+   - "Real Estate" clearly diverges from "Health"
+4. Context mismatch:
+   - Real estate context, not healthcare
+5. Decision:
+   - No correction required
+
+# Correction:
+{"text": "This is Janet from Manuela Real Estate calling about your property listing."}
+```
 
 ---
 
-#### Example 5: Negative Case — No Change
+#### Example 6: Negative Case — No Change
 
 **User:**
 ```
@@ -206,7 +230,7 @@ hints: ["Integrity Marketing Group"]
 
 ---
 
-#### Example 6: No Phonetic Match → No Change
+#### Example 7: No Phonetic Match → No Change
 
 **User:**
 ```
@@ -232,7 +256,7 @@ hints: ["Mindoula Health Inc."]
 
 ---
 
-#### Example 7: No Formatting or Punctuation Corrections
+#### Example 8: No Formatting or Punctuation Corrections
 
 **User:**
 ```
