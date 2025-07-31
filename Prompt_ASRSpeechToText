@@ -178,7 +178,33 @@ hints: ["Mindoula Health Inc"]
 {"text": "You have reached Mindoula and I work at Mindoula Health. Please leave a message."}
 ```
 
-#### Example 5: No Correction Due to Context Mismatch
+---
+
+#### Example 5: No Phonetic Match → No Change
+
+**User:**
+```
+text: "Hello, thank you for calling Sunrise Dental. We’re closed on Sundays. Please leave a message."
+hints: ["Mindoula Health Inc."]
+```
+
+**System:**
+```
+# Step-by-Step Reasoning:
+1. Hint list: ["Mindoula Health Inc."]
+2. Identify candidate phrase: "Sunrise Dental"
+3. Check phonetic similarity:
+   - Sunrise /ˈsʌnˌraɪz/ vs Mindoula /maɪnˈduːlə/  → No shared consonant or vowel patterns
+   - Dental /ˈdɛntəl/ vs Health /hɛlθ/             → Different structures and stresses
+4. No candidate phrase meets the phonetic threshold
+5. The sentence is valid and needs no correction
+
+# Correction:
+{"text": "Hello, thank you for calling Sunrise Dental. We’re closed on Sundays. Please leave a message."}
+```
+---
+
+#### Example 6: No Correction Due to Context Mismatch
 
 **User:**
 ```
@@ -195,6 +221,7 @@ hints: ["Mindoula Health Inc"]
    - "Manuela" resembles "Mindoula" phonetically, but not enough to match
    - "Real Estate" clearly diverges from "Health"
 4. Context mismatch:
+   -**IMPORTANT**: We are **not** to change because upon understanding sentence, it refers to Real estate context, but hint suggest health care.
    - Real estate context, not healthcare
 5. Decision:
    - No correction required
@@ -205,7 +232,7 @@ hints: ["Mindoula Health Inc"]
 
 ---
 
-#### Example 6: Negative Case — No Change
+#### Example 7: Negative Case — No Change
 
 **User:**
 ```
@@ -217,7 +244,7 @@ hints: ["Integrity Marketing Group"]
 ```
 # Step-by-Step Reasoning:
 1. Hint list: ["Integrity Marketing Group"]
-2. Scan text: "Integrity Benefits Services"
+2. Identify candidate phrase: "Integrity Benefits Services"
 3. Phonetic check:
    - "Benefits Services" vs "Marketing Group": no overlap
 4. Decision:
@@ -225,32 +252,6 @@ hints: ["Integrity Marketing Group"]
 
 # Correction:
 {"text": "Thanks for calling. Please hold while we connect you with your licensed insurance agent. Welcome to Integrity Benefits Services."}
-```
-
-
----
-
-#### Example 7: No Phonetic Match → No Change
-
-**User:**
-```
-text: "Hello, thank you for calling Sunrise Dental. We’re closed on Sundays. Please leave a message."
-hints: ["Mindoula Health Inc."]
-```
-
-**System:**
-```
-# Step-by-Step Reasoning:
-1. Hint list: ["Mindoula Health Inc."]
-2. Scan transcription: "Sunrise Dental"
-3. Check phonetic similarity:
-   - Sunrise /ˈsʌnˌraɪz/ vs Mindoula /maɪnˈduːlə/  → No shared consonant or vowel patterns
-   - Dental /ˈdɛntəl/ vs Health /hɛlθ/             → Different structures and stresses
-4. No candidate phrase meets the phonetic threshold
-5. The sentence is valid and needs no correction
-
-# Correction:
-{"text": "Hello, thank you for calling Sunrise Dental. We’re closed on Sundays. Please leave a message."}
 ```
 
 
