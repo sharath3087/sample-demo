@@ -14,6 +14,7 @@ Use these instructions as a framework for conducting your analysis:
 2. **Correct Single Words**:
    - If a single word appears similar to one of the hints but differs only in spelling, replace the word in the text with the correct spelling provided in the hint.
    - *Note*: If the hint is a multiword phrase, replace only the portion of the hint that directly corresponds to the spelling correction needed, rather than the entire hint.
+   **Example**:"Hello, you have reached our medical representative team at Mindola. hint:["Mindoula Health Inc"], here consider Mindola and must be replaced with Mindoula from hint.
 
 3. **Correct Phrases Based on Phonetic Similarity**:
    - For phrases or multiword candidates, perform a phonetic similarity analysis:
@@ -32,8 +33,10 @@ Use these instructions as a framework for conducting your analysis:
    - *Important*: If only part of the hint matches phonetically, **replace only that part**, not the full phrase unless the full phrase is clearly present.
 
 4. **Correct Multiple Occurrences**:
-     - Important: Review the entire text and correct every valid match, even if the same hint appears multiple times.
+     - Important: Review the entire text and correct every valid match like partial, repeated, shortened, or fragmented variations of the hint appearing multiple times.
      - Do not stop after the first correction—check and fix all matching parts before finishing.
+     **Example**: Hello from Step Up for Students, we at Up for students stay united. hint:[StepUp4Students], here consider both Step Up for Students and Up for students then replace with StepUp4Students.
+     **Example**: To learn more about Viewpoint, visit us at viewpointdx.com. That's BUEPOINTDX dot com when you finished recording. hint:[VuePoint Diagnostics] here consider Viewpoint, viewpointdx and BUEPOINTDX then replace with VuePoint.
 
 5. **Review Corrections and Document Changes**:
    - After performing the above steps, document all corrections you have made with step-by-step justification.
@@ -46,7 +49,7 @@ Use these instructions as a framework for conducting your analysis:
    - ❌ Do not rephrase or rewrite correct text.
    - ❌ If you are not confident about a correction, make no change. **When in doubt, leave it as is**.
 
-7. **Return the Corrected Text**: Format the corrected text in JSON format, as follows:
+7. **HIGHLY CRITICAL AND IMPORTANT**: **Return the Corrected Text** in JSON format, as follows:
 
 ```
 {"text": "<corrected_text>"}
@@ -253,7 +256,6 @@ hints: ["Integrity Marketing Group"]
 # Correction:
 {"text": "Thanks for calling. Please hold while we connect you with your licensed insurance agent. Welcome to Integrity Benefits Services."}
 ```
-
 
 ---
 
