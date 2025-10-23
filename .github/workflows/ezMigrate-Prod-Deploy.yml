@@ -20,72 +20,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python Environment
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10.9"
-
-      - name: Install Python Dependencies
+      - name: Generate timestamp in mmddyyHHMMSS format
+        shell: pwsh
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install selenium==4.18.1 pandas==2.2.1 pyautogui==0.9.54 pyinstaller==6.4.0 webdriver-manager>=4.0.0
+          $CURRENT_DATE_TIME = Get-Date -Format "MMddyyHHmmss"
+          echo "CURRENT_DATE_TIME=$CURRENT_DATE_TIME" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          echo "Generated timestamp: $CURRENT_DATE_TIME"
 
-      - name: Verify Assets Directory
+      - name: Use timestamp in next step
+        shell: pwsh
         run: |
-          if (!(Test-Path "assets")) {
-            New-Item -ItemType Directory -Path "assets"
-          }
-          if (!(Test-Path "assets/tekVIcon.ico")) {
-            Write-Error "Icon file not found in assets directory"
-            exit 1
-          }
-
-      - name: Build Mitel Executable file
-        run: |
-          python -m PyInstaller MitelExtractor.spec --clean --noconfirm
-
-      - name: Install Azure CLI on Windows
-        run: |
-          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
-          Start-Process msiexec.exe -ArgumentList '/I AzureCLI.msi /quiet' -NoNewWindow -Wait
-          Remove-Item .\AzureCLI.msi
-
-      - name: Install .NET Core SDK
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "6.0.100"
-
-      - name: Install AzureSignTool
-        run: |
-          dotnet tool install --global AzureSignTool --version 4.0.1
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
-      - name: Code Sign the .exe
-        env:
-          AZURE_KEY_VAULT_URL: ${{ secrets.AZURE_KEY_VAULT_URL }}
-          AZURE_KEY_VAULT_TENANT_ID: ${{ secrets.AZURE_KEY_VAULT_TENANT_ID }}
-          AZURE_KEY_VAULT_CERTIFICATE: ${{ secrets.AZURE_KEY_VAULT_CERTIFICATE }}
-          AZURE_KEY_VAULT_CLIENT_ID: ${{ secrets.AZURE_KEY_VAULT_CLIENT_ID }}
-          AZURE_KEY_VAULT_CLIENT_SECRET: ${{ secrets.AZURE_KEY_VAULT_CLIENT_SECRET }}
-          GLOBALSIGN_TIMESTAMP_SERVER: ${{ secrets.GLOBALSIGN_TIMESTAMP_SERVER }}
-        run: |
-          azuresigntool sign `
-            -kvu "$env:AZURE_KEY_VAULT_URL" `
-            -kvt "$env:AZURE_KEY_VAULT_TENANT_ID" `
-            -kvc "$env:AZURE_KEY_VAULT_CERTIFICATE" `
-            -kvi "$env:AZURE_KEY_VAULT_CLIENT_ID" `
-            -kvs "$env:AZURE_KEY_VAULT_CLIENT_SECRET" `
-            -tr "$env:GLOBALSIGN_TIMESTAMP_SERVER" `
-            -td sha256 dist/MitelExtractor.exe `
-            --verbose
-
-      - name: Upload Code-Signed Executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: MitelExtractor
-          path: dist/MitelExtractor.exe
-
-      - name: Upload .exe to Azure Blob Storage
-        run: |
-          az login --allow-no-subscriptions --service-principal -u "8a6f04b-48d6-ac66-455ea575cfd4" -p "cU28QL8gbQOumEsUzHU4yc6Xlral5" --tenant "e3a46007-31cb-4529-b8cc-ebdbd"
-          az storage blob upload --auth-mode login --account-name tapbuildsstorageaccount --container-name tap-controller-executables --name "mitelExtractor/MitelExtractor-${{ github.event.inputs.workflow_id }}.exe" --file dist/MitelExtractor.exe --overwrite true
+          echo "Using timestamp: $env:CURRENT_DATE_TIME"
+          echo "File name: backup-$env:CURRENT_DATE_TIME.zip"
