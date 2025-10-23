@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - ".github/**"  
+      - ".github/**"
   pull_request:
 
 concurrency:
@@ -43,13 +43,13 @@ jobs:
       - name: Build Mitel Executable file
         run: |
           python -m PyInstaller MitelExtractor.spec --clean --noconfirm
-		  
+
       - name: Install Azure CLI on Windows
         run: |
           Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
           Start-Process msiexec.exe -ArgumentList '/I AzureCLI.msi /quiet' -NoNewWindow -Wait
           Remove-Item .\AzureCLI.msi
-		  
+
       - name: Install .NET Core SDK
         uses: actions/setup-dotnet@v1
         with:
@@ -68,7 +68,7 @@ jobs:
           AZURE_KEY_VAULT_CLIENT_ID: ${{ secrets.AZURE_KEY_VAULT_CLIENT_ID }}
           AZURE_KEY_VAULT_CLIENT_SECRET: ${{ secrets.AZURE_KEY_VAULT_CLIENT_SECRET }}
           GLOBALSIGN_TIMESTAMP_SERVER: ${{ secrets.GLOBALSIGN_TIMESTAMP_SERVER }}
-        run: |          
+        run: |
           azuresigntool sign `
             -kvu "$env:AZURE_KEY_VAULT_URL" `
             -kvt "$env:AZURE_KEY_VAULT_TENANT_ID" `
@@ -78,15 +78,14 @@ jobs:
             -tr "$env:GLOBALSIGN_TIMESTAMP_SERVER" `
             -td sha256 dist/MitelExtractor.exe `
             --verbose
-            
+
       - name: Upload Code-Signed Executable
         uses: actions/upload-artifact@v4
         with:
           name: MitelExtractor
           path: dist/MitelExtractor.exe
-		  
+
       - name: Upload .exe to Azure Blob Storage
         run: |
-          az login --allow-no-subscriptions --service-principal -u "8a6f0a79-894b-48d6-ac66-455ea575cfd4" -p "cU28Q~QvyNGQtfqsL8gbQOumEsUzHU4yc6Xlral5" --tenant "e3a46007-31cb-4529-b8cc-1e59b97ebdbd"
-       
+          az login --allow-no-subscriptions --service-principal -u "8a6f04b-48d6-ac66-455ea575cfd4" -p "cU28QL8gbQOumEsUzHU4yc6Xlral5" --tenant "e3a46007-31cb-4529-b8cc-ebdbd"
           az storage blob upload --auth-mode login --account-name tapbuildsstorageaccount --container-name tap-controller-executables --name "mitelExtractor/MitelExtractor-${{ github.event.inputs.workflow_id }}.exe" --file dist/MitelExtractor.exe --overwrite true
