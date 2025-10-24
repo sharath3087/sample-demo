@@ -2,19 +2,20 @@ name: Test File Upload to Azure
 
 on:
   workflow_dispatch:
+    inputs:
+      create_release:
+        description: "Do you want to create a release?"
+        required: true
+        default: "No"
+        type: choice
+        options:
+          - "Yes"
+          - "No"
   push:
     branches: [main]
     paths-ignore:
       - ".github/**"
   pull_request:
-  release:
-       description: "Do you want to create a release?"
-       required: true
-       default: "No"
-       type: choice
-       options:
-         - "Yes"
-         - "No"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
