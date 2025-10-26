@@ -79,7 +79,6 @@ jobs:
             -td sha256 dist/BWExtractor.exe `
             --verbose
 
-
       - name: Upload Extractor to Artifacts
         uses: actions/upload-artifact@v4
         with:
