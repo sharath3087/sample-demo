@@ -127,10 +127,9 @@ jobs:
           CONTAINER_NAME: extraction-tools
           SOURCE_BLOB: EzMigrateExtractor.zip
           DEST_BLOB: EzMigrateExtractor.zip.old
-          
+		  
         run: |
           az login --allow-no-subscriptions --service-principal -u "$env:AZURE_STORAGE_BLOB_CLIENT_ID" -p "$env:AZURE_STORAGE_BLOB_CLIENT_SECRET" --tenant "$env:AZURE_STORAGE_BLOB_TENANT_ID"
           az storage blob copy start --auth-mode login --account-name "$env:ACCOUNT_NAME" --destination-container "$env:CONTAINER_NAME" --destination-blob "DEV/broadworks/$env:DEST_BLOB" --source-account-name "$env:ACCOUNT_NAME" --source-container "$env:CONTAINER_NAME" --source-blob "DEV/broadworks/$env:SOURCE_BLOB"
           az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/broadworks/$env:SOURCE_BLOB" --file dist/$env:SOURCE_BLOB --overwrite true
-		  az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/broadworks/build_metadata.json" --file dist/build_metadata.json --overwrite true
-		  
+          az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/broadworks/build_metadata.json" --file dist/build_metadata.json --overwrite true
