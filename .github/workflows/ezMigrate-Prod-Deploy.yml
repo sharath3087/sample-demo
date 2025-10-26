@@ -134,5 +134,3 @@ jobs:
           az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/broadworks/$env:SOURCE_BLOB" --file dist/$env:SOURCE_BLOB --overwrite true
 		  az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/broadworks/build_metadata.json" --file dist/build_metadata.json --overwrite true
 		  
-		  
-		  
