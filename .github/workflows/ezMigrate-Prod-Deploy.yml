@@ -41,3 +41,19 @@ jobs:
         run: |
           echo "Using timestamp: $env:CURRENT_DATE_TIME"
           echo "File name: backup-$env:CURRENT_DATE_TIME.zip"
+          
+      - name: Generate Build Metadata JSON
+        run: |
+          echo '{
+            "run_id": "${{ github.run_id }}",
+            "run_number": "${{ github.run_number }}",
+            "workflow": "${{ github.workflow }}",
+            "branch": "${{ github.ref_name }}",
+            "commit_sha": "${{ github.sha }}",
+            "commit_message": "'"$(git log -1 --pretty=%B)"'",
+            "commit_author": "'"$(git log -1 --pretty=%an)"'",
+            "timestamp": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'",
+            "artifact_size_mb": "'"$(du -m dist/EzMigrateExtractor.zip | cut -f1)"'",
+            "actor": "${{ github.actor }}",
+            "workflow_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          }'
