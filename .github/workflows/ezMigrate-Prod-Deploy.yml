@@ -1,10 +1,10 @@
-name: Test File Upload to Azure
+name: Build and Code Sign CUCM Executable
 
 on:
   workflow_dispatch:
     inputs:
-      create_release:
-        description: "Do you want to create a release?"
+      upload_extractor:
+        description: "Upload Extractor to Azure Storage Blob?"
         required: true
         default: "No"
         type: choice
@@ -14,7 +14,7 @@ on:
   push:
     branches: [main]
     paths-ignore:
-      - ".github/**"
+      - ".github/**"  
   pull_request:
 
 concurrency:
@@ -29,24 +29,85 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Generate timestamp in mmddyyHHMMSS format
-        shell: pwsh
-        run: |
-          $CURRENT_DATE_TIME = Get-Date -Format "MMddyyHHmmss"
-          echo "CURRENT_DATE_TIME=$CURRENT_DATE_TIME" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          echo "Generated timestamp: $CURRENT_DATE_TIME"
+      - name: Set up Python Environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10.9"
 
-      - name: Use timestamp in next step
-        shell: pwsh
+      - name: Install Python Dependencies
         run: |
-          echo "Using timestamp: $env:CURRENT_DATE_TIME"
-          echo "File name: backup-$env:CURRENT_DATE_TIME.zip"
-          
-      - name: Generate Build Metadata JSON
+          python -m pip install --upgrade pip
+          python -m pip install requests>=2.31.0 lxml>=4.9.0 typing-extensions>=4.0.0 pyinstaller>=5.13.0
+
+      - name: Verify Assets Directory
+        run: |
+          if (!(Test-Path "assets")) {
+            New-Item -ItemType Directory -Path "assets"
+          }
+          if (!(Test-Path "assets/tekVIcon.ico")) {
+            Write-Error "Icon file not found in assets directory"
+            exit 1
+          }
+
+      - name: Build CUCM Executable file
+        run: |
+          python -m PyInstaller cucm_extractor.spec --clean --noconfirm
+
+      - name: Install .NET Core SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "6.0.100"
+
+      - name: Install AzureSignTool
+        run: |
+          dotnet tool install --global AzureSignTool --version 4.0.1
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      - name: Code Sign the .exe
+        env:
+          AZURE_KEY_VAULT_URL: ${{ secrets.AZURE_KEY_VAULT_URL }}
+          AZURE_KEY_VAULT_TENANT_ID: ${{ secrets.AZURE_KEY_VAULT_TENANT_ID }}
+          AZURE_KEY_VAULT_CERTIFICATE: ${{ secrets.AZURE_KEY_VAULT_CERTIFICATE }}
+          AZURE_KEY_VAULT_CLIENT_ID: ${{ secrets.AZURE_KEY_VAULT_CLIENT_ID }}
+          AZURE_KEY_VAULT_CLIENT_SECRET: ${{ secrets.AZURE_KEY_VAULT_CLIENT_SECRET }}
+          GLOBALSIGN_TIMESTAMP_SERVER: ${{ secrets.GLOBALSIGN_TIMESTAMP_SERVER }}
+        run: |          
+          azuresigntool sign `
+            -kvu "$env:AZURE_KEY_VAULT_URL" `
+            -kvt "$env:AZURE_KEY_VAULT_TENANT_ID" `
+            -kvc "$env:AZURE_KEY_VAULT_CERTIFICATE" `
+            -kvi "$env:AZURE_KEY_VAULT_CLIENT_ID" `
+            -kvs "$env:AZURE_KEY_VAULT_CLIENT_SECRET" `
+            -tr "$env:GLOBALSIGN_TIMESTAMP_SERVER" `
+            -td sha256 dist/CUCM_Extractor.exe `
+            --verbose
+            
+      - name: Upload Code-Signed Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: CUCMExtractor
+          path: dist/CUCM_Extractor.exe
+      
+      - name: Install Azure CLI on Windows
+        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
+        run: |
+          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
+          Start-Process msiexec.exe -ArgumentList '/I AzureCLI.msi /quiet' -NoNewWindow -Wait
+          Remove-Item .\AzureCLI.msi   
+      
+      - name: Archive Extractor Build
+        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
+        uses: vimtor/action-zip@v1
+        with:
+          files: dist/CUCM_Extractor.exe
+          dest: dist/EzMigrateExtractor.zip
+	  
+      - name: Generate - Build Metadata JSON
+        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
         run: |
           echo '{
-            "run_id": "${{ github.run_id }}",
-            "run_number": "${{ github.run_number }}",
+            "Github_run_id": "${{ github.run_id }}",
+            "Github_run_number": "${{ github.run_number }}",
             "workflow": "${{ github.workflow }}",
             "branch": "${{ github.ref_name }}",
             "commit_sha": "${{ github.sha }}",
@@ -56,4 +117,21 @@ jobs:
             "artifact_size_mb": "'"$(du -m dist/EzMigrateExtractor.zip | cut -f1)"'",
             "actor": "${{ github.actor }}",
             "workflow_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }'
+          }' > dist/build_metadata.json
+          
+      - name: Upload Extractor Zip to Azure Blob Storage
+        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
+        env:
+          AZURE_STORAGE_BLOB_CLIENT_ID: ${{ secrets.AZURE_STORAGE_BLOB_CLIENT_ID }}
+          AZURE_STORAGE_BLOB_CLIENT_SECRET: ${{ secrets.AZURE_STORAGE_BLOB_CLIENT_SECRET }}
+          AZURE_STORAGE_BLOB_TENANT_ID: ${{ secrets.AZURE_STORAGE_BLOB_TENANT_ID }}
+          ACCOUNT_NAME: ezmigratedemo
+          CONTAINER_NAME: extraction-tools
+          SOURCE_BLOB: EzMigrateExtractor.zip
+          DEST_BLOB: EzMigrateExtractor.zip.old
+          
+        run: |
+          az login --allow-no-subscriptions --service-principal -u "$env:AZURE_STORAGE_BLOB_CLIENT_ID" -p "$env:AZURE_STORAGE_BLOB_CLIENT_SECRET" --tenant "$env:AZURE_STORAGE_BLOB_TENANT_ID"
+          az storage blob copy start --auth-mode login --account-name "$env:ACCOUNT_NAME" --destination-container "$env:CONTAINER_NAME" --destination-blob "DEV/cucm/$env:DEST_BLOB" --source-account-name "$env:ACCOUNT_NAME" --source-container "$env:CONTAINER_NAME" --source-blob "DEV/cucm/$env:SOURCE_BLOB"
+          az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/cucm/$env:SOURCE_BLOB" --file dist/$env:SOURCE_BLOB --overwrite true
+          az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/cucm/build_metadata.json" --file dist/build_metadata.json --overwrite true
