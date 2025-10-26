@@ -101,7 +101,7 @@ jobs:
         with:
           files: dist/CUCM_Extractor.exe
           dest: dist/EzMigrateExtractor.zip
-	  
+          
       - name: Generate - Build Metadata JSON
         if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
         run: |
