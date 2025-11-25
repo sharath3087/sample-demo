@@ -91,8 +91,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
         with:
-          tag_name: v${{ steps.get_latest_tag.outputs.new_major_tag }}
-          release_name: Release v${{ steps.get_latest_tag.outputs.new_major_tag }}
+          tag_name: ${{ steps.get_latest_tag.outputs.new_major_tag }}
+          release_name: Release ${{ steps.get_latest_tag.outputs.new_major_tag }}
           body: |
             Release created automatically by GitHub Actions.
           draft: false
