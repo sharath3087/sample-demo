@@ -25,3 +25,20 @@ jobs:
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GH_TOKEN }}
+
+      - name: Check Output Parameters
+        run: |
+          echo "Got tag name ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Got release version ${{ steps.tag_version.outputs.new_tag }}"
+          echo "RELEASE_TAG in create-release-tag job: ${{ steps.tag_version.outputs.new_tag }}"
+          echo "Release upload URL: ${{ steps.create_release.outputs.upload_url }}"
+          echo "Release output:"
+          echo "${{ toJson(steps.create_release.outputs) }}"
+          for key in $(echo "${{ toJson(steps.create_release.outputs) }}" | jq -r "keys_unsorted[]"); do
+            value=$(echo "${{ toJson(steps.create_release.outputs) }}" | jq -r ".$key")
+            echo "$key: $value"
+          done
+
+    outputs:
+      LATEST_RELEASE_VERSION: ${{ steps.tag_version.outputs.new_tag }}
+      UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
