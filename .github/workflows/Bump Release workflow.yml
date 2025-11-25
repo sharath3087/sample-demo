@@ -77,11 +77,9 @@ jobs:
             echo "Tag format not recognized: $LATEST_TAG"
             exit 1
           fi
-          NEW_RELEASE_TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          #NEW_RELEASE_TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
           NEW_MAJOR_TAG="v$((MAJOR + 1)).0.0"
-          echo "new_release_tag=$NEW_RELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "new_major_tag=$NEW_MAJOR_TAG" >> $GITHUB_OUTPUT
           echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
-          echo "new_release_tag --> $NEW_RELEASE_TAG"
+          echo "new_major_tag=$NEW_MAJOR_TAG" >> $GITHUB_OUTPUT
           echo "new_major_tag ---> $NEW_MAJOR_TAG"
-          echo "current_major ---> $MAJOR"
+          
