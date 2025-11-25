@@ -33,3 +33,6 @@ jobs:
           echo "new_release_tag=$NEW_RELEASE_TAG" >> $GITHUB_OUTPUT
           echo "new_major_tag=$NEW_MAJOR_TAG" >> $GITHUB_OUTPUT
           echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "new_release_tag ----> $NEW_RELEASE_TAG"
+          echo "new_major_tag ----> $NEW_MAJOR_TAG"
+          echo "current_major ---> $MAJOR"
