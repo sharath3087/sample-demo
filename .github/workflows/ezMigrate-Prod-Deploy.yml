@@ -1,133 +1,35 @@
-name: Build and Code Sign BWExecutable
+name: Auto Increment Release and Tag
 
 on:
   workflow_dispatch:
-    inputs:
-      upload_extractor:
-        description: "Upload Extractor to Azure Storage Blob?"
-        required: true
-        default: "No"
-        type: choice
-        options:
-          - "Yes"
-          - "No"
-  push:
-    branches:
-      - main
-      - dev
-      - bw-extractor
-      - EM-356
-    tags: ["*v[0-9]+.[0-9]+.[0-9]+*"]
 
-  pull_request:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: write
 
 jobs:
-  build:
-    runs-on: [windows-latest]
+  increment-release:
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Checkout (all tags)
+        uses: actions/checkout@v4
         with:
-          python-version: "3.13.1"
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
+      - name: Get latest tag
+        id: get_latest_tag
         run: |
-          pip install --upgrade pip
-          pip install pyinstaller
-          pip install ttkbootstrap
-          pip install requests
-          pip install lxml
-          pip install xmltodict
-          pip install validators
-
-      - name: Build executable
-        run: |
-          pyinstaller --onefile app/main.py --distpath dist --workpath build --add-data="assets/info-small.png:assets" --add-data="assets/tekVIcon.png:assets" --collect-all ttkbootstrap --collect-all requests --collect-all lxml --collect-all xmltodict --collect-all validators --name BWExtractor
-
-      - name: Install .NET Core SDK
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: "6.0.100"
-
-      - name: Install AzureSignTool
-        run: |
-          dotnet tool install --global AzureSignTool --version 4.0.1
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
-      - name: Code Sign the .exe
-        env:
-          AZURE_KEY_VAULT_URL: ${{ secrets.AZURE_KEY_VAULT_URL }}
-          AZURE_KEY_VAULT_TENANT_ID: ${{ secrets.AZURE_KEY_VAULT_TENANT_ID }}
-          AZURE_KEY_VAULT_CERTIFICATE: ${{ secrets.AZURE_KEY_VAULT_CERTIFICATE }}
-          AZURE_KEY_VAULT_CLIENT_ID: ${{ secrets.AZURE_KEY_VAULT_CLIENT_ID }}
-          AZURE_KEY_VAULT_CLIENT_SECRET: ${{ secrets.AZURE_KEY_VAULT_CLIENT_SECRET }}
-          GLOBALSIGN_TIMESTAMP_SERVER: ${{ secrets.GLOBALSIGN_TIMESTAMP_SERVER }}
-        run: |          
-          azuresigntool sign `
-            -kvu "$env:AZURE_KEY_VAULT_URL" `
-            -kvt "$env:AZURE_KEY_VAULT_TENANT_ID" `
-            -kvc "$env:AZURE_KEY_VAULT_CERTIFICATE" `
-            -kvi "$env:AZURE_KEY_VAULT_CLIENT_ID" `
-            -kvs "$env:AZURE_KEY_VAULT_CLIENT_SECRET" `
-            -tr "$env:GLOBALSIGN_TIMESTAMP_SERVER" `
-            -td sha256 dist/BWExtractor.exe `
-            --verbose
-
-      - name: Upload Extractor to Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: BWExtractor
-          path: dist/*.exe
-
-      - name: Install Azure CLI on Windows
-        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
-        run: |
-          Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi
-          Start-Process msiexec.exe -ArgumentList '/I AzureCLI.msi /quiet' -NoNewWindow -Wait
-          Remove-Item .\AzureCLI.msi
-      
-      - name: Archive Extractor Build to Zip
-        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
-        uses: vimtor/action-zip@v1
-        with:
-          files: dist/BWExtractor.exe
-          dest: dist/EzMigrateExtractor.zip
-          
-      - name: Generate - Build Metadata JSON
-        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
-        run: |
-          echo '{
-            "Github_run_id": "${{ github.run_id }}",
-            "Github_run_number": "${{ github.run_number }}",
-            "workflow": "${{ github.workflow }}",
-            "branch": "${{ github.ref_name }}",
-            "commit_sha": "${{ github.sha }}",
-            "commit_message": "'"$(git log -1 --pretty=%B)"'",
-            "commit_author": "'"$(git log -1 --pretty=%an)"'",
-            "timestamp": "'"$(date -u +"%Y-%m-%dT%H:%M:%SZ")"'",
-            "artifact_size_mb": "'"$(du -m dist/EzMigrateExtractor.zip | cut -f1)"'",
-            "actor": "${{ github.actor }}",
-            "workflow_url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          }' > dist/build_metadata.json	  
-          
-      - name: Upload Extractor Zip to Azure Blob Storage
-        if: ${{ github.event.inputs.upload_extractor == 'Yes' }}
-        env:
-          AZURE_STORAGE_BLOB_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_STORAGE_BLOB_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_STORAGE_BLOB_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ACCOUNT_NAME: ezmigratedemo
-          CONTAINER_NAME: extraction-tools
-          SOURCE_BLOB: EzMigrateExtractor.zip
-          DEST_BLOB: EzMigrateExtractor.zip.old
-        run: |
-          az login --allow-no-subscriptions --service-principal -u "$env:AZURE_STORAGE_BLOB_CLIENT_ID" -p "$env:AZURE_STORAGE_BLOB_CLIENT_SECRET" --tenant "$env:AZURE_STORAGE_BLOB_TENANT_ID"
-          az storage blob copy start --auth-mode login --account-name "$env:ACCOUNT_NAME" --destination-container "$env:CONTAINER_NAME" --destination-blob "DEV/broadworks/$env:DEST_BLOB" --source-account-name "$env:ACCOUNT_NAME" --source-container "$env:CONTAINER_NAME" --source-blob "DEV/broadworks/$env:SOURCE_BLOB"
-          az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/broadworks/$env:SOURCE_BLOB" --file dist/$env:SOURCE_BLOB --overwrite true
-          az storage blob upload --auth-mode login --account-name "$env:ACCOUNT_NAME" --container-name "$env:CONTAINER_NAME" --name "DEV/broadworks/build_metadata.json" --file dist/build_metadata.json --overwrite true
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v1.0.0")
+          echo "Latest tag: $LATEST_TAG"
+          if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}; MINOR=${BASH_REMATCH[2]}; PATCH=${BASH_REMATCH[3]}
+          else
+            echo "Tag format not recognized: $LATEST_TAG"
+            exit 1
+          fi
+          NEW_RELEASE_TAG="v${MAJOR}.${MINOR}.$((PATCH + 1))"
+          NEW_MAJOR_TAG="v$((MAJOR + 1)).0.0"
+          echo "new_release_tag=$NEW_RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "new_major_tag=$NEW_MAJOR_TAG" >> $GITHUB_OUTPUT
+          echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
