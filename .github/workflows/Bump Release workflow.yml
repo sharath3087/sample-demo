@@ -115,7 +115,7 @@ jobs:
           echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
           echo "current_major ---> $MAJOR"
           echo "new_major_tag ---> $NEW_MAJOR_TAG"
-		  
+
       - name: Create tag and release
         id: create_release
         uses: ncipollo/release-action@v1.14.0
@@ -125,6 +125,7 @@ jobs:
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
+
   workflow-skipped:
     needs: password-check
     if: needs.password-check.outputs.approved == 'false'
