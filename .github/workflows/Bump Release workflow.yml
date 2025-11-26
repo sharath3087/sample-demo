@@ -115,19 +115,17 @@ jobs:
           echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
           echo "current_major ---> $MAJOR"
           echo "new_major_tag ---> $NEW_MAJOR_TAG"
-
-      - name: Create GitHub Release
+		  
+      - name: Create tag and release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1.14.0
         with:
-          tag_name: ${{ steps.get_latest_tag.outputs.new_major_tag }}
-          release_name: ${{ steps.get_latest_tag.outputs.new_major_tag }}
-          body: |
-            Release created automatically by GitHub Actions.
-          draft: false
+          tag: ${{ steps.get_latest_tag.outputs.new_major_tag }}
+          name: Release ${{ steps.get_latest_tag.outputs.new_major_tag }}
           prerelease: true
+          generateReleaseNotes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
 
   workflow-skipped:
     needs: password-check
