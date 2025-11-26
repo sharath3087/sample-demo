@@ -125,8 +125,6 @@ jobs:
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
-
   workflow-skipped:
     needs: password-check
     if: needs.password-check.outputs.approved == 'false'
