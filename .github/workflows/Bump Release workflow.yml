@@ -1,24 +1,18 @@
-name: Push To Prod Env
+name: Bump Release Tag Check
 
 permissions:
   contents: write
 
-
 on:
   workflow_dispatch:
     inputs:
-      release_version:
-        description: "Github repo tag version (tag format:- vxx.xx.xx)"
-        required: true
-        default: "latest"
       password:
-        description: 'Enter the password to run the workflow'
+        description: 'Enter the password to run this workflow'
         required: true
         type: string
-        default: ''  
+        default: ''
 
 jobs:
-
   password-check:
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +41,7 @@ jobs:
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
-          github_token: ${{ secrets.GH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           append_to_pre_release_tag: ""
           dry_run: true
 
@@ -70,7 +64,7 @@ jobs:
           name: ${{ steps.sanitize_tag.outputs.clean }}
           prerelease: false
           generateReleaseNotes: true
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check Output Parameters
         run: |
@@ -78,100 +72,29 @@ jobs:
           echo "Got release version ${{ steps.sanitize_tag.outputs.clean }}"
           echo "RELEASE_TAG in create-release-tag job: ${{ steps.sanitize_tag.outputs.clean }}"
           echo "Release upload URL: ${{ steps.create_release.outputs.upload_url }}"
+          echo "Release output:"
+          echo "${{ toJson(steps.create_release.outputs) }}"
+          for key in $(echo "${{ toJson(steps.create_release.outputs) }}" | jq -r "keys_unsorted[]"); do
+            value=$(echo "${{ toJson(steps.create_release.outputs) }}" | jq -r ".$key")
+            echo "$key: $value"
+          done
 
     outputs:
       LATEST_RELEASE_VERSION: ${{ steps.sanitize_tag.outputs.clean }}
       UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
   
-
   build:
     needs: 
       - password-check
       - create-release-tag
     if: needs.password-check.outputs.approved == 'true'
     runs-on: ubuntu-latest
-    env:
-      RELEASE_VERSION_INPUT: ${{ github.event.inputs.release_version }}
-
     steps:
-      - uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_PRODUCTION_CREDENTIALS }}
-
-      - name: Install Zip
-        uses: montudor/action-zip@v1
-
-      - name: Get Latest Tag if "latest" is selected
-        id: resolve_tag
-        uses: actions/github-script@v6
-        with:
-          script: |
-            let versionInput = "${{ env.RELEASE_VERSION_INPUT }}";
-            if (versionInput === "latest") {
-              const tags = await github.rest.repos.listTags({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                per_page: 1
-              });
-              const latestTag = tags.data[0]?.name;
-              if (!latestTag) {
-                throw new Error("No tags found in the repository.");
-              }
-              core.setOutput("tag", latestTag);
-            } else {
-              core.setOutput("tag", versionInput);
-            }
-
-      - name: Input Github tag
-        run: echo "Resolved tag--> ${{ steps.resolve_tag.outputs.tag }}"
-
-      - name: Retrieve ezMigrate Production Release ZIP
-        id: release_download
-        uses: dsaltares/fetch-gh-release-asset@master
-        with:
-          version: tags/${{ steps.resolve_tag.outputs.tag }}
-          regex: true
-          file: "ezMigrate-prod-release-.*\\.zip"
-          target: "./"
-
-      - name: Unzip ezMigrate prod release build
-        run: unzip -qq ezMigrate-prod-release-*.zip -d ./
-
-      - name: Verify the directory contents
-        run: |
-          pwd
-          ls -ltr
-          ls -ltr ./ezMigrate
-          rm -f ezMigrate-prod-release-*.zip
-
-      - name: Clear blob storage
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az storage blob delete-batch --account-name ezmigrateapp --auth-mode key -s '$web'
-
-      - name: Upload to blob storage
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az storage blob upload-batch --overwrite --account-name ezmigrateapp --auth-mode key -d '$web' -s ./
-            
-      - name: Purge CDN endpoint
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az cdn endpoint purge --content-paths  "/*" --profile-name ${{ secrets.AZURE_PRODUCTION_CDN_PROFILE_NAME }} --name ${{ secrets.AZURE_PRODUCTION_CDN_ENDPOINT }} --resource-group ${{ secrets.AZURE_PRODUCTION_RESOURCE_GROUP }}      
-
-      - name: logout
-        run: |
-          az logout
-        if: always()
-        
       - name: Checkout (all tags)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get latest tag
         id: get_latest_tag
@@ -197,7 +120,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.get_latest_tag.outputs.new_major_tag }}
           release_name: Release ${{ steps.get_latest_tag.outputs.new_major_tag }}
@@ -214,4 +137,4 @@ jobs:
       - name: Workflow skipped due to invalid password
         run: |
           echo "❌ Workflow skipped - Invalid password provided"
-          echo "Please provide the correct password to run this workflow"         
+          echo "Please provide the correct password to run this workflow"
