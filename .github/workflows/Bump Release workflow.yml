@@ -1,12 +1,37 @@
 name: Bump Release Tag Check
 
 permissions:
-    contents: write
+  contents: write
+
 on:
   workflow_dispatch:
+    inputs:
+      password:
+        description: 'Enter the password to run this workflow'
+        required: true
+        type: string
+        default: ''
 
 jobs:
+  password-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check password
+        id: check-password
+        run: |
+          if [ "${{ github.event.inputs.password }}" == "${{ secrets.WORKFLOW_PASSWORD }}" ]; then
+            echo "✅ Password correct - workflow will continue"
+            echo "approved=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Invalid password - workflow will be skipped"
+            echo "approved=false" >> $GITHUB_OUTPUT
+          fi
+    outputs:
+      approved: ${{ steps.check-password.outputs.approved }}
+
   create-release-tag:
+    needs: password-check
+    if: needs.password-check.outputs.approved == 'true'
     permissions:
       contents: write
       pull-requests: read
@@ -59,8 +84,11 @@ jobs:
       UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
   
   build:
+    needs: 
+      - password-check
+      - create-release-tag
+    if: needs.password-check.outputs.approved == 'true'
     runs-on: ubuntu-latest
-    needs: create-release-tag
     steps:
       - name: Checkout (all tags)
         uses: actions/checkout@v4
@@ -100,3 +128,13 @@ jobs:
             Release created automatically by GitHub Actions.
           draft: false
           prerelease: true
+
+  workflow-skipped:
+    needs: password-check
+    if: needs.password-check.outputs.approved == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow skipped due to invalid password
+        run: |
+          echo "❌ Workflow skipped - Invalid password provided"
+          echo "Please provide the correct password to run this workflow"
