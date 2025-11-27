@@ -27,7 +27,7 @@ jobs:
         run: |
           git fetch --tags --force
           LATEST_TAG=$(git tag -l "v*" --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
-          echo "Latest tag: $LATEST_TAG"
+          echo "Current tag version: $LATEST_TAG"
           if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
             MAJOR=${BASH_REMATCH[1]}
             MINOR=${BASH_REMATCH[2]}
@@ -48,7 +48,7 @@ jobs:
           echo "new_major_tag=$NEW_MAJOR_TAG" >> $GITHUB_OUTPUT
           echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
           echo "current major version ---> $MAJOR"
-          echo "new tag version will be created is ---> $NEW_MAJOR_TAG"
+          echo "Latest tag version will be created is ---> $NEW_MAJOR_TAG"
 
       - name: Sanitize bumped tag
         id: sanitize_tag
