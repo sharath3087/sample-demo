@@ -1,0 +1,82 @@
+name: Push To QA-Stage Env
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  JAVA_VERSION: "8"
+
+jobs:
+  create-release-tag:
+    permissions:
+      contents: write
+      pull-requests: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          git fetch --tags --force
+          LATEST_TAG=$(git tag -l "v*" --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          echo "Latest tag: $LATEST_TAG"
+          if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            
+            if [[ $PATCH -ge 9 ]]; then
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              NEW_MAJOR_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+            else
+              PATCH=$((PATCH + 1))
+              NEW_MAJOR_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+            fi
+          else
+            echo "No existing tags found, starting with v1.0.0"
+            NEW_MAJOR_TAG="v1.0.0"
+          fi
+          echo "new_major_tag=$NEW_MAJOR_TAG" >> $GITHUB_OUTPUT
+          echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "current major version ---> $MAJOR"
+          echo "new tag version  ---> $NEW_MAJOR_TAG"
+
+      - name: Sanitize bumped tag
+        id: sanitize_tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const rawTag = "${{ steps.get_latest_tag.outputs.new_major_tag }}";
+            const cleaned = rawTag.replace(/-[^.]+?\.\d+$/, "");
+            core.info(`Raw tag: ${rawTag} → Cleaned tag: ${cleaned}`);
+            core.setOutput("clean", cleaned);
+
+      - name: Create tag and release
+        id: create_release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          tag: ${{ steps.sanitize_tag.outputs.clean }}
+          name: Release ${{ steps.sanitize_tag.outputs.clean }}
+          prerelease: true
+          generateReleaseNotes: true
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Check Output Parameters
+        run: |
+          echo "Got tag name: ${{ steps.sanitize_tag.outputs.clean }}"
+          echo "Got release version: ${{ steps.sanitize_tag.outputs.clean }}"
+          echo "RELEASE_TAG in create-release-tag job: ${{ steps.sanitize_tag.outputs.clean }}"
+          echo "Release upload URL: ${{ steps.create_release.outputs.upload_url }}"
+
+    outputs:
+      LATEST_RELEASE_VERSION: ${{ steps.sanitize_tag.outputs.clean }}
+      UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
