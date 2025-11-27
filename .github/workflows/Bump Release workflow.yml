@@ -69,6 +69,22 @@ jobs:
           generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create release branch
+        id: create_branch
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          VERSION="${RELEASE_TAG#v}"
+          BRANCH_NAME="release-$VERSION"
+          
+          # Create and push the new branch
+          git checkout -b $BRANCH_NAME
+          git push origin $BRANCH_NAME
+          
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "✅ Created branch: $BRANCH_NAME"
+        env:
+          RELEASE_TAG: ${{ steps.sanitize_tag.outputs.clean }}
+
       - name: Check Output Parameters
         run: |
           echo "Got tag name ${{ steps.sanitize_tag.outputs.clean }}"
@@ -79,6 +95,7 @@ jobs:
     outputs:
       LATEST_RELEASE_VERSION: ${{ steps.sanitize_tag.outputs.clean }}
       UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+      RELEASE_BRANCH: ${{ steps.create_branch.outputs.branch_name }}
   
   build:
     needs: 
@@ -138,6 +155,7 @@ jobs:
           REPO_B: "sharath3087/child-version-update"
           NEW_TAG: ${{ needs.build.outputs.LATEST_RELEASE_VERSION_New }}
           PAT_TOKEN: ${{ secrets.REPO_SYNC_TOKEN }}
+          RELEASE_BRANCH: ${{ needs.build.outputs.RELEASE_BRANCH }}
         with:
           script: |
             const { REPO_B, NEW_TAG, PAT_TOKEN } = process.env;
@@ -200,6 +218,23 @@ jobs:
               });
               
               console.log(`✅ Successfully synced tag ${NEW_TAG} to ${REPO_B}`);
+             // Create release branch 
+            try {
+                await makeRequestWithPAT('POST', `${baseURL}/repos/${owner}/${repo}/git/refs`, {
+                  body: {
+                    ref: `refs/heads/${RELEASE_BRANCH}`,
+                    sha: commitSHA
+                  }
+                });
+                console.log(`✅ Successfully created branch ${RELEASE_BRANCH} in ${REPO_B}`);
+              } catch (branchError) {
+                if (branchError.message.includes('Reference already exists')) {
+                  console.log(`ℹ️ Branch ${RELEASE_BRANCH} already exists in ${REPO_B}, skipping branch creation`);
+                } else {
+                  console.error(`❌ Error creating branch in ${REPO_B}:`, branchError.message);
+                  throw branchError;
+                }
+              }
               
             } catch (error) {
               if (error.message.includes('Reference already exists')) {
