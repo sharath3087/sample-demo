@@ -137,16 +137,15 @@ jobs:
         env:
           REPO_B: "sharath3087/child-version-update"
           NEW_TAG: ${{ needs.build.outputs.LATEST_RELEASE_VERSION_New }}
-		  PAT_TOKEN: ${{ secrets.REPO_SYNC_TOKEN }}
+          PAT_TOKEN: ${{ secrets.REPO_SYNC_TOKEN }}
         with:
           script: |
             const { REPO_B, NEW_TAG, PAT_TOKEN } = process.env;
             const { Octokit } = require('@octokit/rest');
             const patOctokit = new Octokit({ auth: PAT_TOKEN });
-			
-			const [owner, repo] = REPO_B.split('/');
-			
-			// Get latest commit SHA
+            const [owner, repo] = REPO_B.split('/');
+            
+            // Get latest commit SHA
             const repoInfo = await patOctokit.request('GET /repos/{owner}/{repo}', { owner, repo });
             const defaultBranch = repoInfo.data.default_branch;
             const branchInfo = await patOctokit.request('GET /repos/{owner}/{repo}/git/ref/heads/${defaultBranch}', { owner, repo });
@@ -170,6 +169,7 @@ jobs:
               draft: false,
               prerelease: false
             });
+            
             console.log(`✅ Successfully synced tag ${NEW_TAG} to ${REPO_B}`);
 
   workflow-skipped:
