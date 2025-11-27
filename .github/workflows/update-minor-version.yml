@@ -1,4 +1,4 @@
-name: Push To QA-Stage Env
+name: Update minor version
 
 on:
   workflow_dispatch:
