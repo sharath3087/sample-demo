@@ -125,6 +125,41 @@ jobs:
           prerelease: true
           generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      LATEST_RELEASE_VERSION_New: ${{ steps.get_latest_tag.outputs.new_major_tag }}
+
+
+  sync-to-other-repos:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Sync tag to child-version-update
+        uses: actions/github-script@v6
+        env:
+          REPO_B: "sharath3087/child-version-update"
+          NEW_TAG: ${{ needs.build.outputs.LATEST_RELEASE_VERSION_New }}
+        with:
+          script: |
+            const { REPO_B, NEW_TAG } = process.env;
+            
+            // Create tag in Repo B
+            await github.request(`POST /repos/${REPO_B}/git/refs`, {
+              ref: `refs/tags/${NEW_TAG}`,
+              sha: 'main',
+            });
+            
+            // Create release in Repo B
+            await github.request(`POST /repos/${REPO_B}/releases`, {
+              tag_name: NEW_TAG,
+              name: `Release ${NEW_TAG}`,
+              body: `Synced release from Repo A: ${NEW_TAG}`,
+              draft: false,
+              prerelease: false,
+            });
+            
+            console.log(`✅ Successfully synced tag ${NEW_TAG} to ${REPO_B}`);
 
   workflow-skipped:
     needs: password-check
