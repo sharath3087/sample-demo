@@ -48,7 +48,7 @@ jobs:
           echo "new_major_tag=$NEW_MAJOR_TAG" >> $GITHUB_OUTPUT
           echo "current_major=$MAJOR" >> $GITHUB_OUTPUT
           echo "current major version ---> $MAJOR"
-          echo "new tag version  ---> $NEW_MAJOR_TAG"
+          echo "new tag version will be created is ---> $NEW_MAJOR_TAG"
 
       - name: Sanitize bumped tag
         id: sanitize_tag
